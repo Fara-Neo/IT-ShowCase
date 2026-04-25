@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 
 export function Footer() {
@@ -17,9 +19,38 @@ export function Footer() {
               О платформе
             </Link>
           </nav>
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} IT ShowCase
-          </p>
+          <div className="flex items-center gap-3">
+            <a
+              href="https://github.com/Fara-Neo"
+              target="_blank"
+              rel="noreferrer"
+              title="GitHub"
+              className="rounded border px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              GitHub
+            </a>
+            <a
+              href="https://www.linkedin.com/"
+              target="_blank"
+              rel="noreferrer"
+              title="LinkedIn"
+              className="rounded border px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              LinkedIn
+            </a>
+            <a
+              href="https://twitter.com/"
+              target="_blank"
+              rel="noreferrer"
+              title="Twitter"
+              className="rounded border px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Twitter
+            </a>
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} IT ShowCase
+            </p>
+          </div>
         </div>
       </div>
     </footer>

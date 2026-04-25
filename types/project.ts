@@ -13,6 +13,7 @@ export interface Project {
   description: string;
   price: number;
   imageUrl: string | null;
+  demoUrl: string | null;
   techStack: string[];
   published: boolean;
   categoryId: string | null;

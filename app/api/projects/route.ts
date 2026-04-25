@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
         description: validated.description,
         price: validated.price,
         imageUrl: validated.imageUrl,
+        demoUrl: validated.demoUrl,
         techStack: validated.techStack ?? [],
         categoryId: validated.categoryId,
         published: validated.published ?? false,

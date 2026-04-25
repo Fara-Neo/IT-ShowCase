@@ -3,13 +3,6 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { Category, ProjectFilters as Filters } from "@/types";
 
@@ -25,15 +18,17 @@ export function ProjectFilters({ categories, onFilterChange }: ProjectFiltersPro
   const [maxPrice, setMaxPrice] = useState("");
 
   const debouncedSearch = useDebounce(search, 400);
+  const debouncedMinPrice = useDebounce(minPrice, 400);
+  const debouncedMaxPrice = useDebounce(maxPrice, 400);
 
   useEffect(() => {
     onFilterChange({
       search: debouncedSearch || undefined,
       category: category !== "all" ? category : undefined,
-      minPrice: minPrice ? Number(minPrice) : undefined,
-      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      minPrice: debouncedMinPrice ? Number(debouncedMinPrice) : undefined,
+      maxPrice: debouncedMaxPrice ? Number(debouncedMaxPrice) : undefined,
     });
-  }, [debouncedSearch, category, minPrice, maxPrice, onFilterChange]);
+  }, [debouncedSearch, category, debouncedMinPrice, debouncedMaxPrice, onFilterChange]);
 
   const handleReset = () => {
     setSearch("");
@@ -50,19 +45,18 @@ export function ProjectFilters({ categories, onFilterChange }: ProjectFiltersPro
         onChange={(e) => setSearch(e.target.value)}
         className="sm:max-w-xs"
       />
-      <Select value={category} onValueChange={setCategory}>
-        <SelectTrigger className="sm:w-44">
-          <SelectValue placeholder="Категория" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Все категории</SelectItem>
-          {categories.map((cat) => (
-            <SelectItem key={cat.id} value={cat.id}>
-              {cat.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:w-44"
+      >
+        <option value="all">Все категории</option>
+        {categories.map((cat) => (
+          <option key={cat.id} value={cat.id}>
+            {cat.name}
+          </option>
+        ))}
+      </select>
       <Input
         type="number"
         placeholder="Цена от"

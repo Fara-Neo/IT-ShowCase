@@ -92,6 +92,7 @@ model Project {
   description String   @db.Text
   price       Float
   imageUrl    String?
+  demoUrl     String?
   techStack   String[]
   published   Boolean  @default(false)
   createdAt   DateTime @default(now())

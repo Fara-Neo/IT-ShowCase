@@ -6,6 +6,7 @@ export const projectSchema = z.object({
   description: z.string().min(20, "Минимум 20 символов"),
   price: z.number().min(0, "Цена не может быть отрицательной"),
   imageUrl: z.string().url("Некорректный URL изображения").optional(),
+  demoUrl: z.string().url("Некорректный URL демо").optional(),
   techStack: z.array(z.string()).optional(),
   categoryId: z.string().optional(),
   published: z.boolean().optional(),

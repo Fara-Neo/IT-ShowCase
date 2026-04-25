@@ -16,6 +16,7 @@ interface ProjectFormValues {
   price: number;
   slug?: string;
   imageUrl?: string;
+  demoUrl?: string;
   techStack?: string[];
   categoryId?: string;
   published?: boolean;
@@ -37,6 +38,7 @@ export function ProjectForm({ initialData, onSuccess }: ProjectFormProps) {
       title: initialData?.title ?? "",
       description: initialData?.description ?? "",
       price: initialData?.price ?? 0,
+      demoUrl: initialData?.demoUrl ?? "",
       published: initialData?.published ?? false,
     },
   });
@@ -98,6 +100,19 @@ export function ProjectForm({ initialData, onSuccess }: ProjectFormProps) {
         />
         {errors.price && (
           <p className="text-sm text-destructive">{errors.price.message}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="demoUrl">Ссылка на демо</Label>
+        <Input
+          id="demoUrl"
+          type="url"
+          {...register("demoUrl")}
+          placeholder="https://demo.example.com"
+        />
+        {errors.demoUrl && (
+          <p className="text-sm text-destructive">{errors.demoUrl.message}</p>
         )}
       </div>
 

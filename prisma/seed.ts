@@ -74,6 +74,7 @@ async function main() {
       description:
         "Полнофункциональная CRM-система для управления клиентами, сделками и задачами. Включает аналитику продаж, историю взаимодействий, интеграцию с email и телефонией. Адаптивный интерфейс, тёмная тема, экспорт данных в Excel.",
       price: 120000,
+      demoUrl: "https://demo-crm.itshowcase.dev",
       techStack: ["React", "Node.js", "PostgreSQL", "Redis"],
       categoryId: categories.find((c) => c.slug === "saas")!.id,
       published: true,
@@ -84,6 +85,7 @@ async function main() {
       description:
         "Готовый интернет-магазин с каталогом товаров, корзиной, онлайн-оплатой через Stripe и ЮКассу. Система управления заказами, уведомления по email и SMS, личный кабинет покупателя. Интеграция с 1С.",
       price: 85000,
+      demoUrl: "https://demo-shop.itshowcase.dev",
       techStack: ["Next.js", "TypeScript", "Prisma", "Stripe"],
       categoryId: categories.find((c) => c.slug === "ecommerce")!.id,
       published: true,
@@ -94,6 +96,7 @@ async function main() {
       description:
         "Кроссплатформенное мобильное приложение для заказа еды с GPS-трекингом курьера в реальном времени. Включает приложение для курьеров, панель ресторана и административный дашборд.",
       price: 250000,
+      demoUrl: "https://demo-delivery.itshowcase.dev",
       techStack: ["React Native", "Node.js", "Socket.io", "MongoDB"],
       categoryId: categories.find((c) => c.slug === "mobile")!.id,
       published: true,
@@ -104,6 +107,7 @@ async function main() {
       description:
         "Современный лендинг-конструктор с drag-and-drop интерфейсом для самостоятельной настройки. 20+ готовых блоков, анимации, SEO-оптимизация, интеграция с формами и аналитикой. Хостинг включён.",
       price: 35000,
+      demoUrl: "https://demo-landing.itshowcase.dev",
       techStack: ["Vue.js", "TailwindCSS", "Vite"],
       categoryId: categories.find((c) => c.slug === "web")!.id,
       published: true,
@@ -114,6 +118,7 @@ async function main() {
       description:
         "Платформа для автоматизации найма: публикация вакансий, воронка кандидатов, автоматическая проверка резюме с AI, расписание собеседований, электронный документооборот.",
       price: 180000,
+      demoUrl: "https://demo-hr.itshowcase.dev",
       techStack: ["Python", "FastAPI", "React", "OpenAI"],
       categoryId: categories.find((c) => c.slug === "automation")!.id,
       published: true,
@@ -123,7 +128,9 @@ async function main() {
   for (const project of projects) {
     await prisma.project.upsert({
       where: { slug: project.slug },
-      update: {},
+      update: {
+        ...project,
+      },
       create: {
         ...project,
         authorId: seller.id,

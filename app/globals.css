@@ -68,8 +68,6 @@
 
   * {
     @apply border-border;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 250ms;
   }
 
   body {
@@ -78,7 +76,10 @@
   }
 
   a,
-  button {
+  button,
+  [role="button"],
+  [data-slot="select-trigger"],
+  [data-slot="select-item"] {
     transition-property: color, background-color, border-color, opacity, box-shadow, transform, filter;
     transition-duration: 250ms;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -88,5 +89,32 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-up {
+    animation: fadeUp 0.7s ease-out both;
+  }
+
+  .delay-100 {
+    animation-delay: 0.1s;
+  }
+
+  .delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .delay-300 {
+    animation-delay: 0.3s;
   }
 }

@@ -55,6 +55,12 @@
 | UX-полировка: hover, transitions, scroll | 25 апреля 2026 | `smooth scroll`, `duration-250/300 ease-out` глобально, `shadow-xl` на карточках |
 | Ребрендинг: «IT Showcase» → «IT ShowCase» | 25 апреля 2026 | `Header`, `Footer`, `layout.tsx`, `about/page.tsx` |
 | Фон мобильного меню | 25 апреля 2026 | `bg-background/95 backdrop-blur-md shadow-xl` + анимация slide-down |
+| Редизайн главной страницы | 25 апреля 2026 | Новые блоки: Hero, статистика, стек, избранные проекты, отзывы, контакты |
+| Перенос стартового Hero в `/about` | 25 апреля 2026 | Контент старой главной перенесён в `app/(main)/about/page.tsx` |
+| Demo URL для проектов | 25 апреля 2026 | Добавлено поле `demoUrl` в Prisma, API, типы, формы и seed |
+| Избранные проекты на SSR | 25 апреля 2026 | Главная получает 3 проекта напрямую из БД (`prisma.project.findMany`) |
+| Кнопки карточек избранного | 25 апреля 2026 | `Демо` ведёт на `demoUrl`, `Подробнее` ведёт на `/projects/[slug]` |
+| Багфиксы dev-среды | 25 апреля 2026 | Исправлены ошибки `Unsupported Server Component type` и битый кэш `.next` |
 
 ---
 
@@ -62,10 +68,10 @@
 
 ### Публичная часть
 - [x] Layout с Header и Footer (`components/layout/`)
-- [x] Главная страница — Hero + CTA (`app/(main)/page.tsx`)
+- [x] Главная страница — полный лендинг с избранными проектами и отзывами (`app/(main)/page.tsx`)
 - [x] **Каталог проектов `/projects`** — подключён к БД, отображает `ProjectGrid` + `ProjectFilters` с категориями
 - [ ] **Страница проекта `/projects/[slug]`** — детальная страница + `RequestForm`
-- [ ] Страница `/about`
+- [x] Страница `/about` — перенесён контент стартового Hero и описание платформы
 
 ### Административная панель
 - [x] Layout с `AdminSidebar`
@@ -121,11 +127,11 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 
 ## 7. Следующие шаги для разработчика
 
-1. **Реализовать страницу проекта** `/projects/[slug]` — ISR (`revalidate: 60`), детали + `RequestForm` внизу.
+1. **Доработать страницу проекта** `/projects/[slug]` — добавить полноценный контент карточки + блок `RequestForm` внизу.
 2. **Подключить Cloudinary** — заполнить ключи в `.env.local`, протестировать загрузку через `/api/upload`.
 3. **Подключить Mailtrap** — заполнить SMTP-настройки, протестировать отправку заявки.
-4. **Реализовать CRUD проектов** в adminке — `ProjectForm` + `ProjectImageUpload`.
-5. **Реализовать страницу `/about`** — описание платформы, команда, контакты.
+4. **Реализовать CRUD проектов** в adminке — `ProjectForm` + `ProjectImageUpload` (включая работу с `demoUrl`).
+5. **Добавить CI/CD** — базовые проверки lint/build/migrate в GitHub Actions.
 6. **Создавать ветки** по схеме: `feature/project-page`, `feature/admin-crud`, `fix/...`.
 7. **Обновлять этот файл** после каждой значимой задачи.
 
