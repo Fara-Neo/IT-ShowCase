@@ -48,6 +48,13 @@
 | Кастомные хуки | 25 апреля 2026 | `useProjects`, `useRequests`, `useDebounce` |
 | Создание GitHub-репозитория + первый коммит | 25 апреля 2026 | [Fara-Neo/IT-ShowCase](https://github.com/Fara-Neo/IT-ShowCase) |
 | Исправление совместимости форм (react-hook-form) | 25 апреля 2026 | `Input`, `Textarea`, `Button` → нативные элементы с `forwardRef` |
+| **Каталог проектов `/projects`** | 25 апреля 2026 | `ProjectCatalog` + SSR категорий из БД + `ProjectFilters` + `ProjectGrid` |
+| Удаление дефолтной страницы Next.js | 25 апреля 2026 | `app/page.tsx` удалён, маршрут `/` → `app/(main)/page.tsx` |
+| Подключение `MobileNav` в `Header` | 25 апреля 2026 | Бургер-меню на мобилке, кнопки скрыты на `< md` |
+| Адаптив главной страницы (375px) | 25 апреля 2026 | Hero-кнопки в `flex-col` на мобилке, полная ширина |
+| UX-полировка: hover, transitions, scroll | 25 апреля 2026 | `smooth scroll`, `duration-250/300 ease-out` глобально, `shadow-xl` на карточках |
+| Ребрендинг: «IT Showcase» → «IT ShowCase» | 25 апреля 2026 | `Header`, `Footer`, `layout.tsx`, `about/page.tsx` |
+| Фон мобильного меню | 25 апреля 2026 | `bg-background/95 backdrop-blur-md shadow-xl` + анимация slide-down |
 
 ---
 
@@ -56,7 +63,7 @@
 ### Публичная часть
 - [x] Layout с Header и Footer (`components/layout/`)
 - [x] Главная страница — Hero + CTA (`app/(main)/page.tsx`)
-- [ ] **Каталог проектов `/projects`** — подключить БД, отобразить `ProjectGrid` + `ProjectFilters`
+- [x] **Каталог проектов `/projects`** — подключён к БД, отображает `ProjectGrid` + `ProjectFilters` с категориями
 - [ ] **Страница проекта `/projects/[slug]`** — детальная страница + `RequestForm`
 - [ ] Страница `/about`
 
@@ -114,12 +121,12 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 
 ## 7. Следующие шаги для разработчика
 
-1. **Реализовать каталог** `/projects` — подключить данные из БД через `prisma.project.findMany()`, отрисовать `ProjectGrid`.
-2. **Реализовать страницу проекта** `/projects/[slug]` — ISR (`revalidate: 60`), `RequestForm` внизу.
-3. **Подключить Cloudinary** — заполнить ключи в `.env.local`, протестировать загрузку через `/api/upload`.
-4. **Подключить Mailtrap** — заполнить SMTP-настройки, протестировать отправку заявки.
-5. **Реализовать CRUD проектов** в adminке — `ProjectForm` + `ProjectImageUpload`.
-6. **Создавать ветки** по схеме: `feature/catalog`, `feature/project-page`, `feature/admin-crud`, `fix/...`.
+1. **Реализовать страницу проекта** `/projects/[slug]` — ISR (`revalidate: 60`), детали + `RequestForm` внизу.
+2. **Подключить Cloudinary** — заполнить ключи в `.env.local`, протестировать загрузку через `/api/upload`.
+3. **Подключить Mailtrap** — заполнить SMTP-настройки, протестировать отправку заявки.
+4. **Реализовать CRUD проектов** в adminке — `ProjectForm` + `ProjectImageUpload`.
+5. **Реализовать страницу `/about`** — описание платформы, команда, контакты.
+6. **Создавать ветки** по схеме: `feature/project-page`, `feature/admin-crud`, `fix/...`.
 7. **Обновлять этот файл** после каждой значимой задачи.
 
 > **Правило:** Этот документ — живой. Устаревшая документация хуже её отсутствия.

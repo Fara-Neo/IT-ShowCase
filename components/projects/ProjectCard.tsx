@@ -12,14 +12,14 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <Card className="group overflow-hidden transition-all duration-200 hover:scale-[1.02] hover:shadow-lg">
+    <Card className="group overflow-hidden transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl">
       <div className="relative aspect-video overflow-hidden bg-muted">
         {project.imageUrl ? (
           <Image
             src={project.imageUrl}
             alt={project.title}
             fill
-            className="object-cover transition-transform duration-200 group-hover:scale-105"
+            className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground text-sm">

@@ -27,8 +27,9 @@ export function MobileNav() {
 
       <div
         className={cn(
-          "fixed inset-0 top-16 z-40 bg-background border-t transition-all",
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          "fixed inset-x-0 top-16 z-40 border-t shadow-xl transition-all duration-300 ease-out",
+          "bg-background/95 backdrop-blur-md",
+          isOpen ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none -translate-y-3"
         )}
       >
         <nav className="flex flex-col gap-1 p-4">

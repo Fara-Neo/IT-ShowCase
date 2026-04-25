@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,16 +11,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useEffect } from "react";
-import type { ProjectFilters as Filters } from "@/types";
+import type { Category, ProjectFilters as Filters } from "@/types";
 
 interface ProjectFiltersProps {
+  categories: Category[];
   onFilterChange: (filters: Filters) => void;
 }
 
-export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
+export function ProjectFilters({ categories, onFilterChange }: ProjectFiltersProps) {
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<string | null>("all");
+  const [category, setCategory] = useState("all");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
@@ -29,7 +29,7 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
   useEffect(() => {
     onFilterChange({
       search: debouncedSearch || undefined,
-      category: category && category !== "all" ? category : undefined,
+      category: category !== "all" ? category : undefined,
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
     });
@@ -37,7 +37,7 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
 
   const handleReset = () => {
     setSearch("");
-    setCategory("all" as string | null);
+    setCategory("all");
     setMinPrice("");
     setMaxPrice("");
   };
@@ -56,6 +56,11 @@ export function ProjectFilters({ onFilterChange }: ProjectFiltersProps) {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Все категории</SelectItem>
+          {categories.map((cat) => (
+            <SelectItem key={cat.id} value={cat.id}>
+              {cat.name}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       <Input

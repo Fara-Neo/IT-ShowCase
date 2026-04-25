@@ -15,13 +15,13 @@ export default function HomePage() {
           Находите готовые IT-решения или представляйте свои разработки.
           Профессиональная площадка для разработчиков и заказчиков.
         </p>
-        <div className="flex gap-4">
-          <Link href="/projects" className={cn(buttonVariants({ size: "lg" }))}>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <Link href="/projects" className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto justify-center")}>
             Смотреть проекты
           </Link>
           <Link
             href="/register"
-            className={cn(buttonVariants({ size: "lg", variant: "outline" }))}
+            className={cn(buttonVariants({ size: "lg", variant: "outline" }), "w-full sm:w-auto justify-center")}
           >
             Стать продавцом
           </Link>

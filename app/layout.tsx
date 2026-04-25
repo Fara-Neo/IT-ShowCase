@@ -8,8 +8,8 @@ const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "IT Showcase — Маркетплейс IT-проектов",
-    template: "%s | IT Showcase",
+    default: "IT ShowCase — Маркетплейс IT-проектов",
+    template: "%s | IT ShowCase",
   },
   description:
     "Платформа для демонстрации и продажи IT-проектов. Найдите готовые решения или представьте свои разработки.",

@@ -7,7 +7,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 font-bold">
             <span className="text-primary">IT</span>
-            <span>Showcase</span>
+            <span>ShowCase</span>
           </div>
           <nav className="flex gap-6 text-sm text-muted-foreground">
             <Link href="/projects" className="hover:text-foreground transition-colors">
@@ -18,7 +18,7 @@ export function Footer() {
             </Link>
           </nav>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} IT Showcase
+            © {new Date().getFullYear()} IT ShowCase
           </p>
         </div>
       </div>
