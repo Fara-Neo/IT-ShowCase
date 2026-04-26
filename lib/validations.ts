@@ -10,6 +10,7 @@ export const projectSchema = z.object({
   techStack: z.array(z.string()).optional(),
   categoryId: z.string().optional(),
   published: z.boolean().optional(),
+  featured: z.boolean().optional(),
 });
 
 export const requestSchema = z.object({

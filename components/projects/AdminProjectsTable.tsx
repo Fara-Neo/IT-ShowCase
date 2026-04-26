@@ -24,6 +24,7 @@ interface AdminProjectRow {
   slug: string;
   price: number;
   published: boolean;
+  featured: boolean;
   createdAt: Date;
   category: {
     id: string;
@@ -39,6 +40,7 @@ interface AdminProjectsTableProps {
 export function AdminProjectsTable({ projects }: AdminProjectsTableProps) {
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingFeaturedId, setTogglingFeaturedId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AdminProjectRow | null>(null);
 
   const handleDelete = async () => {
@@ -61,6 +63,32 @@ export function AdminProjectsTable({ projects }: AdminProjectsTableProps) {
       toast.error("Ошибка удаления. Попробуйте снова.");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleToggleFeatured = async (project: AdminProjectRow) => {
+    setTogglingFeaturedId(project.id);
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ featured: !project.featured }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Не удалось обновить избранное");
+      }
+
+      toast.success(
+        !project.featured
+          ? "Проект добавлен в избранное"
+          : "Проект убран из избранного"
+      );
+      router.refresh();
+    } catch {
+      toast.error("Ошибка обновления. Попробуйте снова.");
+    } finally {
+      setTogglingFeaturedId(null);
     }
   };
 
@@ -87,6 +115,7 @@ export function AdminProjectsTable({ projects }: AdminProjectsTableProps) {
             <TableHead>Категория</TableHead>
             <TableHead>Цена</TableHead>
             <TableHead>Статус</TableHead>
+            <TableHead>Избранное</TableHead>
             <TableHead>Создан</TableHead>
             <TableHead className="text-right">Действия</TableHead>
           </TableRow>
@@ -109,9 +138,23 @@ export function AdminProjectsTable({ projects }: AdminProjectsTableProps) {
                   {project.published ? "Опубликован" : "Черновик"}
                 </Badge>
               </TableCell>
+              <TableCell>
+                <Badge variant={project.featured ? "default" : "outline"}>
+                  {project.featured ? "Да" : "Нет"}
+                </Badge>
+              </TableCell>
               <TableCell>{formatDate(project.createdAt)}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={project.featured ? "secondary" : "outline"}
+                    onClick={() => handleToggleFeatured(project)}
+                    disabled={togglingFeaturedId === project.id}
+                  >
+                    {project.featured ? "Убрать из избранного" : "В избранное"}
+                  </Button>
                   <Link
                     href={`/admin/projects/${project.id}/edit`}
                     className={buttonVariants({ variant: "outline", size: "sm" })}

@@ -78,6 +78,7 @@ async function main() {
       techStack: ["React", "Node.js", "PostgreSQL", "Redis"],
       categoryId: categories.find((c) => c.slug === "saas")!.id,
       published: true,
+      featured: true,
     },
     {
       title: "Интернет-магазин одежды",
@@ -89,6 +90,7 @@ async function main() {
       techStack: ["Next.js", "TypeScript", "Prisma", "Stripe"],
       categoryId: categories.find((c) => c.slug === "ecommerce")!.id,
       published: true,
+      featured: true,
     },
     {
       title: "Мобильное приложение для доставки еды",
@@ -100,6 +102,7 @@ async function main() {
       techStack: ["React Native", "Node.js", "Socket.io", "MongoDB"],
       categoryId: categories.find((c) => c.slug === "mobile")!.id,
       published: true,
+      featured: true,
     },
     {
       title: "Лендинг с конструктором блоков",
@@ -111,6 +114,7 @@ async function main() {
       techStack: ["Vue.js", "TailwindCSS", "Vite"],
       categoryId: categories.find((c) => c.slug === "web")!.id,
       published: true,
+      featured: false,
     },
     {
       title: "Система автоматизации HR-процессов",
@@ -122,6 +126,7 @@ async function main() {
       techStack: ["Python", "FastAPI", "React", "OpenAI"],
       categoryId: categories.find((c) => c.slug === "automation")!.id,
       published: true,
+      featured: false,
     },
   ];
 

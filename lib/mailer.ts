@@ -1,13 +1,37 @@
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 587,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+function getSmtpConfig() {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const from = process.env.EMAIL_FROM;
+
+  if (!host || !user || !pass || !from) {
+    return null;
+  }
+
+  return {
+    host,
+    user,
+    pass,
+    from,
+    port: Number(process.env.SMTP_PORT) || 587,
+  };
+}
+
+function createTransporter() {
+  const smtp = getSmtpConfig();
+  if (!smtp) return null;
+
+  return nodemailer.createTransport({
+    host: smtp.host,
+    port: smtp.port,
+    auth: {
+      user: smtp.user,
+      pass: smtp.pass,
+    },
+  });
+}
 
 interface SendRequestEmailsParams {
   request: {
@@ -28,10 +52,16 @@ export async function sendRequestEmails({
   project,
   sellerEmail,
 }: SendRequestEmailsParams) {
+  const transporter = createTransporter();
+  const smtp = getSmtpConfig();
+  if (!transporter || !smtp) {
+    throw new Error("SMTP is not configured");
+  }
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
+    from: smtp.from,
     to: sellerEmail,
     subject: `Новая заявка на проект «${project.title}»`,
     html: `
@@ -45,7 +75,7 @@ export async function sendRequestEmails({
   });
 
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
+    from: smtp.from,
     to: request.clientEmail,
     subject: `Ваша заявка на «${project.title}» принята`,
     html: `
@@ -54,6 +84,25 @@ export async function sendRequestEmails({
       <p>Ваша заявка на проект <strong>${project.title}</strong> успешно отправлена.</p>
       <p>Продавец свяжется с вами в ближайшее время.</p>
       <p><a href="${appUrl}/projects/${project.slug}">Страница проекта</a></p>
+    `,
+  });
+}
+
+export async function sendTestEmail(to: string) {
+  const transporter = createTransporter();
+  const smtp = getSmtpConfig();
+  if (!transporter || !smtp) {
+    throw new Error("SMTP is not configured");
+  }
+
+  await transporter.sendMail({
+    from: smtp.from,
+    to,
+    subject: "IT ShowCase: SMTP test",
+    html: `
+      <h2>SMTP работает</h2>
+      <p>Тестовое письмо отправлено успешно.</p>
+      <p>Время: ${new Date().toISOString()}</p>
     `,
   });
 }

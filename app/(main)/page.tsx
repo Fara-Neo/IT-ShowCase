@@ -35,12 +35,14 @@ const reviews = [
 ];
 
 export default async function HomePage() {
-  const featuredProjects = await prisma.project.findMany({
-    where: { published: true },
+  const featuredProjectsRaw = await prisma.project.findMany({
+    where: { published: true, featured: true },
     include: { category: true },
-    orderBy: { createdAt: "desc" },
-    take: 3,
+    orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
   });
+  const featuredProjects = [...featuredProjectsRaw]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3);
 
   const parallaxStyle = {
     backgroundImage:
@@ -96,61 +98,69 @@ export default async function HomePage() {
             Все проекты
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {featuredProjects.map((project, idx) => (
-            <TiltCard key={project.title}>
-              <Card className={`h-full ${idx ? `delay-${(idx + 1) * 100}` : ""}`}>
-                <CardHeader>
-                  <CardTitle>{project.title}</CardTitle>
-                  <p className="line-clamp-1 text-sm text-muted-foreground">
-                    {project.category?.name ?? "IT-проект"}
-                  </p>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col space-y-4">
-                  <p className="text-xl font-semibold text-primary">{formatPrice(project.price)}</p>
-                  <p className="min-h-[72px] text-sm text-muted-foreground">
-                    {project.description.length > 140
-                      ? `${project.description.slice(0, 140)}...`
-                      : project.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {project.techStack.slice(0, 4).map((tag) => (
-                      <Badge key={tag} variant="outline">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter className="mt-auto flex gap-2">
-                  {project.demoUrl ? (
-                    <a
-                      href={project.demoUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={cn(buttonVariants({ size: "sm" }), "flex-1 justify-center")}
+        {featuredProjects.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {featuredProjects.map((project, idx) => (
+              <TiltCard key={project.title}>
+                <Card className={`h-full ${idx ? `delay-${(idx + 1) * 100}` : ""}`}>
+                  <CardHeader>
+                    <CardTitle>{project.title}</CardTitle>
+                    <p className="line-clamp-1 text-sm text-muted-foreground">
+                      {project.category?.name ?? "IT-проект"}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="flex flex-1 flex-col space-y-4">
+                    <p className="text-xl font-semibold text-primary">{formatPrice(project.price)}</p>
+                    <p className="min-h-[72px] text-sm text-muted-foreground">
+                      {project.description.length > 140
+                        ? `${project.description.slice(0, 140)}...`
+                        : project.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {project.techStack.slice(0, 4).map((tag) => (
+                        <Badge key={tag} variant="outline">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="mt-auto pt-4 flex gap-2">
+                    {project.demoUrl ? (
+                      <a
+                        href={project.demoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={cn(buttonVariants({ size: "sm" }), "flex-1 justify-center")}
+                      >
+                        Демо
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled
+                        className={cn(buttonVariants({ size: "sm" }), "flex-1 justify-center opacity-50")}
+                      >
+                        Демо
+                      </button>
+                    )}
+                    <Link
+                      href={`/projects/${project.slug}`}
+                      className={cn(buttonVariants({ size: "sm", variant: "outline" }), "flex-1 justify-center")}
                     >
-                      Демо
-                    </a>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled
-                      className={cn(buttonVariants({ size: "sm" }), "flex-1 justify-center opacity-50")}
-                    >
-                      Демо
-                    </button>
-                  )}
-                  <Link
-                    href={`/projects/${project.slug}`}
-                    className={cn(buttonVariants({ size: "sm", variant: "outline" }), "flex-1 justify-center")}
-                  >
-                    Подробнее
-                  </Link>
-                </CardFooter>
-              </Card>
-            </TiltCard>
-          ))}
-        </div>
+                      Подробнее
+                    </Link>
+                  </CardFooter>
+                </Card>
+              </TiltCard>
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="pt-6 text-sm text-muted-foreground">
+              Пока нет избранных проектов. Добавьте их в админ-панели.
+            </CardContent>
+          </Card>
+        )}
       </section>
 
       <section id="contact" className="container mx-auto px-4 py-12">

@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
         techStack: validated.techStack ?? [],
         categoryId: validated.categoryId,
         published: validated.published ?? false,
+        featured: validated.featured ?? false,
         authorId: session.user.id,
       },
     });

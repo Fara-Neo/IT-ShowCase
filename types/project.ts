@@ -16,6 +16,7 @@ export interface Project {
   demoUrl: string | null;
   techStack: string[];
   published: boolean;
+  featured: boolean;
   categoryId: string | null;
   category: Category | null;
   authorId: string;

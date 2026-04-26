@@ -222,20 +222,22 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             <CardHeader>
               <CardTitle className="text-2xl">{formatPrice(project.price)}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-7">
               <p className="text-sm text-muted-foreground">
                 Заинтересовал проект? Оставьте заявку, и мы свяжемся с вами для
                 обсуждения деталей.
               </p>
-              {project.demoUrl ? (
-                <a href={project.demoUrl} target="_blank" rel="noreferrer">
-                  <Button className="w-full">Открыть демо</Button>
-                </a>
-              ) : (
-                <Button disabled className="w-full">
-                  Демо недоступно
-                </Button>
-              )}
+              <div className="pt-3">
+                {project.demoUrl ? (
+                  <a href={project.demoUrl} target="_blank" rel="noreferrer">
+                    <Button className="w-full">Открыть демо</Button>
+                  </a>
+                ) : (
+                  <Button disabled className="w-full">
+                    Демо недоступно
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
 

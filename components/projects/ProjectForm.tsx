@@ -23,6 +23,7 @@ interface ProjectFormValues {
   techStack?: string[];
   categoryId?: string;
   published?: boolean;
+  featured?: boolean;
 }
 
 interface ProjectFormProps {
@@ -54,6 +55,7 @@ export function ProjectForm({ initialData, categories, onSuccess }: ProjectFormP
       demoUrl: initialData?.demoUrl ?? "",
       categoryId: initialData?.categoryId ?? "",
       published: initialData?.published ?? false,
+      featured: initialData?.featured ?? false,
       techStack: initialData?.techStack ?? [],
     },
   });
@@ -215,6 +217,18 @@ export function ProjectForm({ initialData, categories, onSuccess }: ProjectFormP
         />
         <Label htmlFor="published" className="cursor-pointer">
           Опубликовать проект сразу
+        </Label>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          id="featured"
+          type="checkbox"
+          {...register("featured")}
+          className="h-4 w-4 rounded border-input"
+        />
+        <Label htmlFor="featured" className="cursor-pointer">
+          Добавить в избранное (на главную)
         </Label>
       </div>
 

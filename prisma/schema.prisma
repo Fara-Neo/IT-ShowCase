@@ -95,6 +95,7 @@ model Project {
   demoUrl     String?
   techStack   String[]
   published   Boolean  @default(false)
+  featured    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -107,6 +108,7 @@ model Project {
   @@index([slug])
   @@index([authorId])
   @@index([published])
+  @@index([featured])
 }
 
 model Request {

@@ -13,7 +13,7 @@ export default async function AdminProjectsPage() {
     include: {
       category: true,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
   });
 
   return (
