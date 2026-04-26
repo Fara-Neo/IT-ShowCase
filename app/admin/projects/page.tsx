@@ -1,21 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdminProjectsTable } from "@/components/projects/AdminProjectsTable";
+import { prisma } from "@/lib/prisma";
 import { buttonVariants } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Проекты | Админ",
 };
 
-export default function AdminProjectsPage() {
+export default async function AdminProjectsPage() {
+  const projects = await prisma.project.findMany({
+    include: {
+      category: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Проекты</h1>
         <Link href="/admin/projects/new" className={buttonVariants()}>
           Добавить проект
         </Link>
       </div>
-      <p className="text-muted-foreground">Список проектов в разработке...</p>
+      <AdminProjectsTable projects={projects} />
     </div>
   );
 }

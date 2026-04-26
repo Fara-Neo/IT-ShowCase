@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { ProjectForm } from "@/components/projects/ProjectForm";
+import { prisma } from "@/lib/prisma";
 
 interface EditProjectPageProps {
   params: { id: string };
@@ -8,13 +11,28 @@ export const metadata: Metadata = {
   title: "Редактировать проект | Админ",
 };
 
-export default function AdminEditProjectPage({ params }: EditProjectPageProps) {
+export default async function AdminEditProjectPage({ params }: EditProjectPageProps) {
+  const [project, categories] = await Promise.all([
+    prisma.project.findUnique({
+      where: { id: params.id },
+      include: {
+        category: true,
+        author: { select: { id: true, name: true, image: true } },
+      },
+    }),
+    prisma.category.findMany({
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
+  if (!project) {
+    notFound();
+  }
+
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Редактировать проект</h1>
-      <p className="text-muted-foreground">
-        Редактирование проекта {params.id} в разработке...
-      </p>
+      <h1 className="mb-6 text-2xl font-bold">Редактировать проект</h1>
+      <ProjectForm initialData={project} categories={categories} />
     </div>
   );
 }
