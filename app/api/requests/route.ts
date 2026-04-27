@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { RequestStatus } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requestSchema } from "@/lib/validations";
 import { sendRequestEmails } from "@/lib/mailer";
 
-const requestStatuses = ["new", "in_review", "completed", "rejected"] as const;
+const requestStatuses = [
+  RequestStatus.new,
+  RequestStatus.in_review,
+  RequestStatus.completed,
+  RequestStatus.rejected,
+] as const;
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,9 +22,9 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const statusParam = searchParams.get("status");
-    const status =
-      statusParam && requestStatuses.includes(statusParam as (typeof requestStatuses)[number])
-        ? statusParam
+    const status: RequestStatus | null =
+      statusParam && requestStatuses.includes(statusParam as RequestStatus)
+        ? (statusParam as RequestStatus)
         : null;
 
     const requests = await prisma.request.findMany({
