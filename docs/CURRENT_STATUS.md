@@ -1,7 +1,7 @@
 # CURRENT STATUS
 
 > Проект на этапе **Этап 1 — активная разработка MVP**.
-> Инфраструктура полностью поднята, репозиторий опубликован на GitHub. Обновлено: 26 апреля 2026.
+> Инфраструктура полностью поднята, репозиторий опубликован на GitHub. Обновлено: 28 апреля 2026.
 
 ---
 
@@ -23,7 +23,8 @@
 - [x] Репозиторий создан: **https://github.com/Fara-Neo/IT-ShowCase**
 - [x] Инициализация проекта Next.js 14 (App Router, TypeScript, Tailwind)
 - [x] Первый коммит запушен в ветку `main` (94 файла, 15 367 строк)
-- [ ] Настройка CI/CD
+- [x] Настройка CI/CD (GitHub Actions: `npm ci` + `prisma validate/generate/migrate deploy` + `lint` + `build`)
+- [x] Настройка Ruleset для `main` с required status check
 
 ---
 
@@ -69,6 +70,9 @@
 | Admin-панель заявок | 26 апреля 2026 | Реализованы список, фильтр по статусу, смена статуса и API `GET/PATCH` для заявок |
 | Admin-панель пользователей | 26 апреля 2026 | Реализованы список пользователей и смена роли через API (с защитой от снятия admin у себя) |
 | SMTP тестирование в админке | 26 апреля 2026 | Добавлен endpoint `POST /api/admin/mail-test` и кнопка «Тест SMTP» в `admin/requests` |
+| CI workflow в GitHub Actions | 28 апреля 2026 | Добавлен `.github/workflows/ci.yml`, включены проверки install/prisma/lint/build |
+| Стабилизация `npm ci` в CI | 28 апреля 2026 | Обновлён lockfile и зафиксирован `preact` для консистентной установки зависимостей |
+| Фикс type-check в `api/requests` | 28 апреля 2026 | Использован enum `RequestStatus` из Prisma, сборка `next build` проходит в CI |
 
 ---
 
@@ -121,6 +125,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 | 4 | Prisma Client в Edge Runtime | Low | Решено: `middleware.ts` использует только JWT-проверку через `next-auth/jwt` |
 | 5 | `@base-ui/react` компоненты несовместимы с `react-hook-form` | — | **Исправлено:** `Input`, `Textarea`, `Button` переписаны на нативные элементы |
 | 6 | git / gh CLI отсутствуют в системном PATH | Low | Workaround: использовать git из VS 2019 Build Tools; добавить в PATH постоянно |
+| 7 | Задержка появления status checks в Ruleset после первого прогона CI | Low | Решено: после успешного run check добавлен в required checks для `main` |
 
 ---
 
@@ -137,7 +142,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 
 1. **Подключить Cloudinary (production-ready)** — заполнить ключи в `.env.local`, проверить `/api/upload` и подготовить переход на signed upload.
 2. **Подключить Mailtrap/Nodemailer в окружении** — заполнить SMTP в `.env.local` и проверить отправку через кнопку «Тест SMTP» и форму заявки.
-3. **Добавить CI/CD** — базовые проверки lint/build/migrate в GitHub Actions.
+3. **Расширить CI/CD** — добавить отдельные jobs для тестов и (опционально) авто-деплоя.
 4. **Реализовать rate limiting для формы заявки** — закрыть High-priority issue по спаму.
 5. **Обновлять этот файл** после каждой значимой задачи.
 
