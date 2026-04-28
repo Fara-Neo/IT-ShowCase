@@ -73,6 +73,9 @@
 | CI workflow в GitHub Actions | 28 апреля 2026 | Добавлен `.github/workflows/ci.yml`, включены проверки install/prisma/lint/build |
 | Стабилизация `npm ci` в CI | 28 апреля 2026 | Обновлён lockfile и зафиксирован `preact` для консистентной установки зависимостей |
 | Фикс type-check в `api/requests` | 28 апреля 2026 | Использован enum `RequestStatus` из Prisma, сборка `next build` проходит в CI |
+| SMTP в dev-окружении (Mailtrap Sending) | 28 апреля 2026 | Заполнены SMTP env, подтверждена отправка через «Тест SMTP» и форму заявки |
+| Rate limiting для формы заявки | 28 апреля 2026 | В `POST /api/requests` добавлены лимиты по IP и email с ответом `429` |
+| Улучшение обработки ошибок SMTP/заявок | 28 апреля 2026 | Добавлены `400/429/502`, диагностические сообщения и локализованные уведомления в UI |
 
 ---
 
@@ -95,7 +98,7 @@
 
 ### Сервисы
 - [ ] Cloudinary — заполнить ключи в `.env.local`, протестировать `/api/upload`
-- [ ] Nodemailer / Mailtrap — заполнить SMTP в `.env.local`, протестировать отправку заявки
+- [x] Nodemailer / Mailtrap — SMTP настроен, протестированы endpoint `POST /api/admin/mail-test` и отправка из формы заявки
 
 ---
 
@@ -120,7 +123,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 | # | Проблема | Приоритет | Статус / Комментарий |
 |---|---|---|---|
 | 1 | Загрузка файлов >4,5 МБ через Vercel Serverless Functions | High | Решение: прямая загрузка на Cloudinary через signed upload |
-| 2 | Отсутствие rate limiting на форме заявки — риск спама | High | Решить на Этапе 1: `upstash/ratelimit` или middleware-счётчик |
+| 2 | Отсутствие rate limiting на форме заявки — риск спама | High | **Решено:** добавлен лимит в `POST /api/requests` (IP + email, окно 1 час, ответ `429`) |
 | 3 | FOUC при смене темы в Safari | Low | Решено: `next-themes` с `attribute="class"` + `suppressHydrationWarning` |
 | 4 | Prisma Client в Edge Runtime | Low | Решено: `middleware.ts` использует только JWT-проверку через `next-auth/jwt` |
 | 5 | `@base-ui/react` компоненты несовместимы с `react-hook-form` | — | **Исправлено:** `Input`, `Textarea`, `Button` переписаны на нативные элементы |
@@ -134,16 +137,16 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 | Роль | Email | Пароль |
 |---|---|---|
 | admin | `admin@itshowcase.dev` | `Admin123!` |
-| seller | `seller@itshowcase.dev` | `Seller123!` |
+| seller | `kadirov987@gmail.com` | `Seller123!` |
 
 ---
 
 ## 7. Следующие шаги для разработчика
 
 1. **Подключить Cloudinary (production-ready)** — заполнить ключи в `.env.local`, проверить `/api/upload` и подготовить переход на signed upload.
-2. **Подключить Mailtrap/Nodemailer в окружении** — заполнить SMTP в `.env.local` и проверить отправку через кнопку «Тест SMTP» и форму заявки.
-3. **Расширить CI/CD** — добавить отдельные jobs для тестов и (опционально) авто-деплоя.
-4. **Реализовать rate limiting для формы заявки** — закрыть High-priority issue по спаму.
+2. **Расширить CI/CD** — добавить отдельные jobs для тестов и (опционально) авто-деплоя.
+3. **Cloudinary production-ready** — перейти с серверной загрузки на signed upload, чтобы обойти лимит Vercel 4.5 MB.
+4. **Почтовый провайдер для production** — верифицировать собственный домен и заменить demo-domain Mailtrap.
 5. **Обновлять этот файл** после каждой значимой задачи.
 
 > **Правило:** Этот документ — живой. Устаревшая документация хуже её отсутствия.

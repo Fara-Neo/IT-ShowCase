@@ -45,6 +45,23 @@ const statusOptions: { value: "all" | RequestStatus; label: string }[] = [
   { value: "rejected", label: "Отклонена" },
 ];
 
+function mapSmtpErrorToRu(message: string) {
+  switch (message) {
+    case "Forbidden":
+      return "Доступ запрещен. Нужны права администратора.";
+    case "Invalid JSON body":
+      return "Некорректный формат запроса.";
+    case "Invalid email for test message":
+      return "Укажите корректный email для тестовой отправки.";
+    case "SMTP is not configured":
+      return "SMTP не настроен. Проверьте переменные окружения.";
+    case "Failed to send test email":
+      return "Не удалось отправить тестовое письмо.";
+    default:
+      return message;
+  }
+}
+
 export function AdminRequestsTable({
   requests,
   canSendSmtpTest = false,
@@ -101,12 +118,23 @@ export function AdminRequestsTable({
       });
 
       if (!response.ok) {
-        throw new Error("Не удалось отправить тестовое письмо");
+        let message = "Не удалось отправить тестовое письмо";
+        try {
+          const errorData = (await response.json()) as { error?: string };
+          if (errorData.error) {
+            message = errorData.error;
+          }
+        } catch {
+          // Keep default message when response is not JSON.
+        }
+        throw new Error(mapSmtpErrorToRu(message));
       }
 
       toast.success("Тестовое письмо отправлено");
-    } catch {
-      toast.error("Ошибка отправки тестового письма");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Ошибка отправки тестового письма"
+      );
     } finally {
       setIsSendingTestEmail(false);
     }
