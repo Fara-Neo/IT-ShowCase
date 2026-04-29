@@ -83,6 +83,8 @@
 | Deploy checklist | 29 апреля 2026 | Добавлен `docs/DEPLOY_CHECKLIST.md` с pre-deploy и post-deploy smoke-check |
 | Prisma migrate на Vercel build | 30 апреля 2026 | В `package.json` добавлен `prisma migrate deploy` в `npm run build` для автоприменения миграций при деплое |
 | Валидация `ProjectForm` + production build | 30 апреля 2026 | Упрощена Zod-схема проекта и типизация формы, чтобы `next build` проходил без конфликтов resolver типов |
+| Neon production БД | 30 апреля 2026 | Подключён облачный Postgres (Neon), применены миграции и выполнен `db seed` для тестовых данных |
+| Деплой на Vercel (в процессе) | 30 апреля 2026 | Проект подключён к GitHub, добавлены production env и домен `itshowcase.online`; выполняется настройка сборки и финальный smoke-check |
 
 ---
 
@@ -106,6 +108,7 @@
 ### Сервисы
 - [x] Cloudinary — signed upload реализован, ключи заполнены и загрузка протестирована end-to-end
 - [x] Nodemailer / Mailtrap — SMTP настроен, протестированы endpoint `POST /api/admin/mail-test` и отправка из формы заявки
+- [ ] Production-хостинг — Vercel + кастомный домен: env перенесены, идёт проверка успешного деплоя и маршрутов на проде
 
 ---
 
@@ -136,6 +139,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 | 5 | `@base-ui/react` компоненты несовместимы с `react-hook-form` | — | **Исправлено:** `Input`, `Textarea`, `Button` переписаны на нативные элементы |
 | 6 | git / gh CLI отсутствуют в системном PATH | Low | Workaround: использовать git из VS 2019 Build Tools; добавить в PATH постоянно |
 | 7 | Задержка появления status checks в Ruleset после первого прогона CI | Low | Решено: после успешного run check добавлен в required checks для `main` |
+| 8 | Ошибка Vercel: «No Output Directory named public» | Medium | **Причина:** проект настроен не как Next.js (или задан неверный Output Directory). Для Next.js Output Directory должен быть по умолчанию; Framework Preset — Next.js |
 
 ---
 
@@ -150,7 +154,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 
 ## 7. Следующие шаги для разработчика
 
-1. **Подготовка деплоя (Vercel + Neon)** — перенести production env в Vercel и выполнить smoke-check после первого деплоя.
+1. **Завершить деплой на Vercel** — Framework Preset: Next.js; Output Directory: по умолчанию; `NEXTAUTH_URL`/`NEXT_PUBLIC_APP_URL` = канонический URL домена; Redeploy после env; smoke-check публичных страниц и админки.
 2. **Расширить CI/CD** — добавить отдельные jobs для тестов и (опционально) авто-деплоя.
 3. **Почтовый провайдер для production** — верифицировать собственный домен и заменить demo-domain Mailtrap.
 4. **Production rate limiting** — вынести лимит из in-memory в Redis/Upstash для горизонтального масштабирования.
