@@ -1,32 +1,59 @@
 import { z } from "zod";
 
-const emptyToUndefined = (value: unknown) => {
-  if (typeof value !== "string") return value;
-  const trimmed = value.trim();
-  return trimmed === "" ? undefined : trimmed;
-};
+export const projectSchema = z
+  .object({
+    title: z.string().min(3, "Минимум 3 символа").max(100, "Максимум 100 символов"),
+    slug: z.string().optional(),
+    description: z.string().min(20, "Минимум 20 символов"),
+    price: z.number().min(0, "Цена не может быть отрицательной"),
+    imageUrl: z.string().optional(),
+    demoUrl: z.string().optional(),
+    techStack: z.array(z.string()).optional(),
+    categoryId: z.string().optional(),
+    published: z.boolean().optional(),
+    featured: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.slug !== undefined && data.slug.trim() !== "") {
+      const value = data.slug.trim();
+      if (value.length < 3) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Минимум 3 символа",
+          path: ["slug"],
+        });
+      }
+      if (value.length > 100) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Максимум 100 символов",
+          path: ["slug"],
+        });
+      }
+    }
 
-export const projectSchema = z.object({
-  title: z.string().min(3, "Минимум 3 символа").max(100, "Максимум 100 символов"),
-  slug: z.preprocess(
-    emptyToUndefined,
-    z.string().min(3, "Минимум 3 символа").max(100, "Максимум 100 символов").optional()
-  ),
-  description: z.string().min(20, "Минимум 20 символов"),
-  price: z.number().min(0, "Цена не может быть отрицательной"),
-  imageUrl: z.preprocess(
-    emptyToUndefined,
-    z.string().url("Некорректный URL изображения").optional()
-  ),
-  demoUrl: z.preprocess(
-    emptyToUndefined,
-    z.string().url("Некорректный URL демо").optional()
-  ),
-  techStack: z.array(z.string()).optional(),
-  categoryId: z.preprocess(emptyToUndefined, z.string().optional()),
-  published: z.boolean().optional(),
-  featured: z.boolean().optional(),
-});
+    if (data.imageUrl !== undefined && data.imageUrl.trim() !== "") {
+      const result = z.string().url().safeParse(data.imageUrl.trim());
+      if (!result.success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Некорректный URL изображения",
+          path: ["imageUrl"],
+        });
+      }
+    }
+
+    if (data.demoUrl !== undefined && data.demoUrl.trim() !== "") {
+      const result = z.string().url().safeParse(data.demoUrl.trim());
+      if (!result.success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Некорректный URL демо",
+          path: ["demoUrl"],
+        });
+      }
+    }
+  });
 
 export const requestSchema = z.object({
   projectId: z.string().min(1, "Укажите проект"),
@@ -52,6 +79,7 @@ export const loginSchema = z.object({
 });
 
 export type ProjectInput = z.infer<typeof projectSchema>;
+export type ProjectFormValues = z.input<typeof projectSchema>;
 export type RequestInput = z.infer<typeof requestSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

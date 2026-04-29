@@ -5,6 +5,16 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
+const oauthProviders = [];
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  oauthProviders.push(
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    })
+  );
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
@@ -44,10 +54,7 @@ export const authOptions: NextAuthOptions = {
         };
       },
     }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-    }),
+    ...oauthProviders,
   ],
   callbacks: {
     async jwt({ token, user }) {

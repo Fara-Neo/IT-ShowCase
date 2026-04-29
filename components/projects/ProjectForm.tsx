@@ -4,7 +4,11 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { projectSchema } from "@/lib/validations";
+import {
+  projectSchema,
+  type ProjectFormValues,
+  type ProjectInput,
+} from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,19 +16,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { ProjectImageUpload } from "@/components/projects/ProjectImageUpload";
 import toast from "react-hot-toast";
 import type { Category, Project } from "@/types";
-
-interface ProjectFormValues {
-  title: string;
-  description: string;
-  price: number;
-  slug?: string;
-  imageUrl?: string;
-  demoUrl?: string;
-  techStack?: string[];
-  categoryId?: string;
-  published?: boolean;
-  featured?: boolean;
-}
 
 interface ProjectFormProps {
   initialData?: Partial<Project>;
@@ -51,28 +42,25 @@ export function ProjectForm({ initialData, categories, onSuccess }: ProjectFormP
       title: initialData?.title ?? "",
       description: initialData?.description ?? "",
       price: initialData?.price ?? 0,
+      slug: "",
       imageUrl: initialData?.imageUrl ?? "",
       demoUrl: initialData?.demoUrl ?? "",
       categoryId: initialData?.categoryId ?? "",
       published: initialData?.published ?? false,
       featured: initialData?.featured ?? false,
-      techStack: initialData?.techStack ?? [],
+      techStack: [defaultTechStack],
     },
   });
 
   const onSubmit: SubmitHandler<ProjectFormValues> = async (data) => {
     const techStackRaw = data.techStack?.[0] ?? "";
-    const normalized = {
+    const normalized: ProjectInput = projectSchema.parse({
       ...data,
-      slug: data.slug?.trim() || undefined,
-      imageUrl: data.imageUrl?.trim() || undefined,
-      demoUrl: data.demoUrl?.trim() || undefined,
-      categoryId: data.categoryId?.trim() || undefined,
       techStack: techStackRaw
         .split(",")
         .map((item) => item.trim())
         .filter(Boolean),
-    };
+    });
 
     try {
       const url = initialData?.id
