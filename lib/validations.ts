@@ -1,14 +1,29 @@
 import { z } from "zod";
 
+const emptyToUndefined = (value: unknown) => {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  return trimmed === "" ? undefined : trimmed;
+};
+
 export const projectSchema = z.object({
   title: z.string().min(3, "Минимум 3 символа").max(100, "Максимум 100 символов"),
-  slug: z.string().min(3).max(100).optional(),
+  slug: z.preprocess(
+    emptyToUndefined,
+    z.string().min(3, "Минимум 3 символа").max(100, "Максимум 100 символов").optional()
+  ),
   description: z.string().min(20, "Минимум 20 символов"),
   price: z.number().min(0, "Цена не может быть отрицательной"),
-  imageUrl: z.string().url("Некорректный URL изображения").optional(),
-  demoUrl: z.string().url("Некорректный URL демо").optional(),
+  imageUrl: z.preprocess(
+    emptyToUndefined,
+    z.string().url("Некорректный URL изображения").optional()
+  ),
+  demoUrl: z.preprocess(
+    emptyToUndefined,
+    z.string().url("Некорректный URL демо").optional()
+  ),
   techStack: z.array(z.string()).optional(),
-  categoryId: z.string().optional(),
+  categoryId: z.preprocess(emptyToUndefined, z.string().optional()),
   published: z.boolean().optional(),
   featured: z.boolean().optional(),
 });

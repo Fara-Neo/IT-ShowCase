@@ -12,6 +12,11 @@ interface ProjectImageUploadProps {
   currentUrl?: string;
 }
 
+interface SignedUploadResponse {
+  uploadUrl: string;
+  params: Record<string, string | number>;
+}
+
 export function ProjectImageUpload({
   onUpload,
   currentUrl,
@@ -36,22 +41,56 @@ export function ProjectImageUpload({
 
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/upload", {
+      const signedRes = await fetch("/api/upload", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileName: file.name }),
       });
 
-      if (!res.ok) throw new Error("Upload failed");
+      if (!signedRes.ok) {
+        throw new Error("Не удалось получить подпись загрузки");
+      }
 
-      const { url } = await res.json();
-      setPreview(url);
-      onUpload(url);
+      const signedPayload = (await signedRes.json()) as SignedUploadResponse;
+      const directFormData = new FormData();
+      directFormData.append("file", file);
+
+      for (const [key, value] of Object.entries(signedPayload.params)) {
+        directFormData.append(key, String(value));
+      }
+
+      const res = await fetch(signedPayload.uploadUrl, {
+        method: "POST",
+        body: directFormData,
+      });
+
+      if (!res.ok) {
+        let message = "Не удалось загрузить файл в Cloudinary";
+        try {
+          const errorData = (await res.json()) as {
+            error?: { message?: string };
+          };
+          if (errorData.error?.message) {
+            message = `Cloudinary: ${errorData.error.message}`;
+          }
+        } catch {
+          // Keep fallback error message for non-JSON responses.
+        }
+        throw new Error(message);
+      }
+
+      const uploadResult = (await res.json()) as { secure_url?: string };
+      if (!uploadResult.secure_url) {
+        throw new Error("Cloudinary вернул некорректный ответ");
+      }
+
+      setPreview(uploadResult.secure_url);
+      onUpload(uploadResult.secure_url);
       toast.success("Изображение загружено");
-    } catch {
-      toast.error("Ошибка загрузки изображения");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Ошибка загрузки изображения"
+      );
     } finally {
       setIsUploading(false);
     }
