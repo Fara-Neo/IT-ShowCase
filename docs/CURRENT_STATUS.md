@@ -92,7 +92,6 @@
 | Финальная полировка текста на `/about` | 30 апреля 2026 | Первый подзаголовочный абзац возвращён к базовому виду; основной абзац про IT ShowCase оформлен как акцентный визуальный блок |
 | Redis rate limiting для заявок | 30 апреля 2026 | Добавлен Upstash Redis клиент, лимиты `POST /api/requests` перенесены в Redis с fallback на in-memory при отсутствии env |
 | Smoke-тест rate limit после миграции | 30 апреля 2026 | Локально подтверждён порог по email: 3 успешных запроса подряд, 4-й получает `429` |
-| Фикс Vercel deploy для Prisma migrate (Neon) | 30 апреля 2026 | Добавлен `directUrl` в Prisma datasource и `DIRECT_URL` в `.env.example`, чтобы `prisma migrate deploy` использовал direct connection вместо pooler |
 
 ---
 
@@ -120,7 +119,6 @@
 - [x] Nodemailer / Mailtrap — SMTP настроен, протестированы endpoint `POST /api/admin/mail-test` и отправка из формы заявки
 - [~] OAuth (Google) — провайдер подключается условно по env, в production настроены redirect URI; требуется финальная проверка входа после обновления env
 - [~] Redis/Upstash rate limiting — серверная логика переведена на Redis (с fallback), локальный smoke-тест пройден; требуется прод-проверка на Vercel
-- [~] Prisma migrate на Vercel + Neon — добавлен `DIRECT_URL` для миграций; нужно заполнить env в Vercel и подтвердить успешный деплой
 - [ ] Production-хостинг — Vercel + кастомный домен: env перенесены, идёт проверка успешного деплоя и маршрутов на проде
 
 ---
@@ -155,7 +153,6 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 | 8 | Ошибка Vercel: «No Output Directory named public» | Medium | **Причина:** проект настроен не как Next.js (или задан неверный Output Directory). Для Next.js Output Directory должен быть по умолчанию; Framework Preset — Next.js |
 | 9 | После логина возможен возврат на `/login` при открытии `/admin` | High | **Основная причина найдена:** отсутствует `NEXTAUTH_SECRET` в Vercel Production, из-за чего middleware не получает валидный JWT токен из cookie |
 | 10 | Mailtrap domain status: Unverified | Medium | В процессе: на стороне DNS (reg.ru) добавляются записи CNAME/DKIM/DMARC для подтверждения sending domain |
-| 11 | Vercel deploy падает на `prisma migrate deploy` с P1002 (advisory lock timeout) | High | **Причина найдена:** миграции шли через Neon pooler URL. **Фикс в коде:** добавлен `directUrl`/`DIRECT_URL`; требуется задать direct connection string в Vercel env |
 
 ---
 
@@ -171,7 +168,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 ## 7. Следующие шаги для разработчика
 
 1. **Стабилизировать auth на проде** — добавить/проверить `NEXTAUTH_SECRET` в Vercel Production, выполнить Redeploy, проверить `/api/auth/session`, логин и доступ к `/admin`.
-2. **Завершить деплой на Vercel** — добавить `DIRECT_URL` (Neon direct, без pooler) для миграций Prisma; Framework Preset: Next.js; Output Directory: по умолчанию; `NEXTAUTH_URL`/`NEXT_PUBLIC_APP_URL` = канонический URL домена; smoke-check публичных страниц и админки.
+2. **Завершить деплой на Vercel** — Framework Preset: Next.js; Output Directory: по умолчанию; `NEXTAUTH_URL`/`NEXT_PUBLIC_APP_URL` = канонический URL домена; smoke-check публичных страниц и админки.
 3. **Завершить Mailtrap DNS verification** — дождаться propagation записей, подтвердить домен в Mailtrap, повторно проверить отправку из `POST /api/admin/mail-test`.
 4. **Расширить CI/CD** — добавить отдельные jobs для тестов и (опционально) авто-деплоя.
 5. **Проверка Redis rate limiting на production** — подтвердить срабатывание лимита на Vercel (включая IP/email кейсы) и отсутствие регрессий по отправке заявок.
