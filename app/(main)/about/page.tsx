@@ -16,7 +16,7 @@ export default function AboutPage() {
           <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
             Маркетплейс <span className="text-primary">IT-проектов</span>
           </h2>
-          <p className="max-w-2xl rounded-xl border bg-muted/30 px-6 py-4 text-lg text-muted-foreground shadow-sm">
+          <p className="max-w-2xl text-lg text-muted-foreground">
             Находите готовые IT-решения или представляйте свои разработки.
             Профессиональная площадка для разработчиков и заказчиков.
           </p>
@@ -27,7 +27,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <p className="max-w-3xl text-muted-foreground">
+        <p className="max-w-3xl rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-background px-6 py-5 text-muted-foreground shadow-sm">
           IT ShowCase — профессиональная площадка для демонстрации и продажи IT-проектов.
           Мы соединяем разработчиков с заказчиками, упрощая процесс выбора, демонстрации и
           приобретения готовых IT-решений.
