@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
 import toast from "react-hot-toast";
 
 export function LoginForm() {
@@ -79,13 +78,6 @@ export function LoginForm() {
             {isSubmitting ? "Вход..." : "Войти"}
           </Button>
         </form>
-
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Нет аккаунта?{" "}
-          <Link href="/register" className="text-primary hover:underline">
-            Зарегистрируйтесь
-          </Link>
-        </p>
       </CardContent>
     </Card>
   );

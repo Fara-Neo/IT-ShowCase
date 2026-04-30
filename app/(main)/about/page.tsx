@@ -16,19 +16,13 @@ export default function AboutPage() {
           <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
             Маркетплейс <span className="text-primary">IT-проектов</span>
           </h2>
-          <p className="max-w-2xl text-lg text-muted-foreground">
+          <p className="max-w-2xl rounded-xl border bg-muted/30 px-6 py-4 text-lg text-muted-foreground shadow-sm">
             Находите готовые IT-решения или представляйте свои разработки.
             Профессиональная площадка для разработчиков и заказчиков.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Link href="/projects" className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto justify-center")}>
               Смотреть проекты
-            </Link>
-            <Link
-              href="/register"
-              className={cn(buttonVariants({ size: "lg", variant: "outline" }), "w-full sm:w-auto justify-center")}
-            >
-              Стать продавцом
             </Link>
           </div>
         </section>

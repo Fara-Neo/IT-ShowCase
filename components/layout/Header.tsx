@@ -37,12 +37,6 @@ export function Header() {
             >
               Войти
             </Link>
-            <Link
-              href="/register"
-              className={cn(buttonVariants({ size: "sm" }))}
-            >
-              Регистрация
-            </Link>
           </div>
           <MobileNav />
         </div>

@@ -85,6 +85,10 @@
 | Валидация `ProjectForm` + production build | 30 апреля 2026 | Упрощена Zod-схема проекта и типизация формы, чтобы `next build` проходил без конфликтов resolver типов |
 | Neon production БД | 30 апреля 2026 | Подключён облачный Postgres (Neon), применены миграции и выполнен `db seed` для тестовых данных |
 | Деплой на Vercel (в процессе) | 30 апреля 2026 | Проект подключён к GitHub, добавлены production env и домен `itshowcase.online`; выполняется настройка сборки и финальный smoke-check |
+| Временное отключение онбординга продавцов в UI | 30 апреля 2026 | Убраны CTA/ссылки `Регистрация` и `Стать продавцом`; на `/about` обновлён визуальный блок описания |
+| OAuth (Google) подключение для production | 30 апреля 2026 | Подготовлены OAuth redirect/origin для `itshowcase.online` и локальной разработки; определён обязательный набор env для Vercel |
+| Диагностика авторизации на проде | 30 апреля 2026 | Выявлена критичная причина редиректов на `/login`: отсутствовал `NEXTAUTH_SECRET` в Vercel Production |
+| DNS-подготовка Mailtrap sending domain | 30 апреля 2026 | Подготовлены и добавляются DNS записи (CNAME/DKIM/DMARC) для верификации домена отправителя |
 
 ---
 
@@ -96,6 +100,7 @@
 - [x] **Каталог проектов `/projects`** — подключён к БД, отображает `ProjectGrid` + `ProjectFilters` с категориями
 - [x] **Страница проекта `/projects/[slug]`** — SSR-деталка с контентом, `RequestForm`, похожими проектами и SEO metadata
 - [x] Страница `/about` — перенесён контент стартового Hero и описание платформы
+- [x] Временный UX-режим без регистрации — кнопки/ссылки `Регистрация` убраны из `Header`, `MobileNav` и `LoginForm`; CTA `Стать продавцом` убран из `/about`
 
 ### Административная панель
 - [x] Layout с `AdminSidebar`
@@ -108,6 +113,7 @@
 ### Сервисы
 - [x] Cloudinary — signed upload реализован, ключи заполнены и загрузка протестирована end-to-end
 - [x] Nodemailer / Mailtrap — SMTP настроен, протестированы endpoint `POST /api/admin/mail-test` и отправка из формы заявки
+- [~] OAuth (Google) — провайдер подключается условно по env, в production настроены redirect URI; требуется финальная проверка входа после обновления env
 - [ ] Production-хостинг — Vercel + кастомный домен: env перенесены, идёт проверка успешного деплоя и маршрутов на проде
 
 ---
@@ -140,6 +146,8 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 | 6 | git / gh CLI отсутствуют в системном PATH | Low | Workaround: использовать git из VS 2019 Build Tools; добавить в PATH постоянно |
 | 7 | Задержка появления status checks в Ruleset после первого прогона CI | Low | Решено: после успешного run check добавлен в required checks для `main` |
 | 8 | Ошибка Vercel: «No Output Directory named public» | Medium | **Причина:** проект настроен не как Next.js (или задан неверный Output Directory). Для Next.js Output Directory должен быть по умолчанию; Framework Preset — Next.js |
+| 9 | После логина возможен возврат на `/login` при открытии `/admin` | High | **Основная причина найдена:** отсутствует `NEXTAUTH_SECRET` в Vercel Production, из-за чего middleware не получает валидный JWT токен из cookie |
+| 10 | Mailtrap domain status: Unverified | Medium | В процессе: на стороне DNS (reg.ru) добавляются записи CNAME/DKIM/DMARC для подтверждения sending domain |
 
 ---
 
@@ -154,10 +162,11 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 
 ## 7. Следующие шаги для разработчика
 
-1. **Завершить деплой на Vercel** — Framework Preset: Next.js; Output Directory: по умолчанию; `NEXTAUTH_URL`/`NEXT_PUBLIC_APP_URL` = канонический URL домена; Redeploy после env; smoke-check публичных страниц и админки.
-2. **Расширить CI/CD** — добавить отдельные jobs для тестов и (опционально) авто-деплоя.
-3. **Почтовый провайдер для production** — верифицировать собственный домен и заменить demo-domain Mailtrap.
-4. **Production rate limiting** — вынести лимит из in-memory в Redis/Upstash для горизонтального масштабирования.
-5. **Обновлять этот файл** после каждой значимой задачи.
+1. **Стабилизировать auth на проде** — добавить/проверить `NEXTAUTH_SECRET` в Vercel Production, выполнить Redeploy, проверить `/api/auth/session`, логин и доступ к `/admin`.
+2. **Завершить деплой на Vercel** — Framework Preset: Next.js; Output Directory: по умолчанию; `NEXTAUTH_URL`/`NEXT_PUBLIC_APP_URL` = канонический URL домена; smoke-check публичных страниц и админки.
+3. **Завершить Mailtrap DNS verification** — дождаться propagation записей, подтвердить домен в Mailtrap, повторно проверить отправку из `POST /api/admin/mail-test`.
+4. **Расширить CI/CD** — добавить отдельные jobs для тестов и (опционально) авто-деплоя.
+5. **Production rate limiting** — вынести лимит из in-memory в Redis/Upstash для горизонтального масштабирования.
+6. **Обновлять этот файл** после каждой значимой задачи.
 
 > **Правило:** Этот документ — живой. Устаревшая документация хуже её отсутствия.

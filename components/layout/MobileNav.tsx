@@ -51,13 +51,6 @@ export function MobileNav() {
           >
             Войти
           </Link>
-          <Link
-            href="/register"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center px-3 py-3 text-base font-medium rounded-md bg-primary text-primary-foreground"
-          >
-            Регистрация
-          </Link>
         </nav>
       </div>
     </div>
