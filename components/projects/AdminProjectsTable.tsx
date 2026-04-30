@@ -53,14 +53,17 @@ export function AdminProjectsTable({ projects }: AdminProjectsTableProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Не удалось удалить проект");
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error || "Не удалось удалить проект");
       }
 
       toast.success("Проект удален");
       setPendingDelete(null);
       router.refresh();
-    } catch {
-      toast.error("Ошибка удаления. Попробуйте снова.");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Ошибка удаления. Попробуйте снова.";
+      toast.error(message);
     } finally {
       setDeletingId(null);
     }
@@ -76,7 +79,8 @@ export function AdminProjectsTable({ projects }: AdminProjectsTableProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Не удалось обновить избранное");
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error || "Не удалось обновить избранное");
       }
 
       toast.success(
@@ -85,8 +89,10 @@ export function AdminProjectsTable({ projects }: AdminProjectsTableProps) {
           : "Проект убран из избранного"
       );
       router.refresh();
-    } catch {
-      toast.error("Ошибка обновления. Попробуйте снова.");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Ошибка обновления. Попробуйте снова.";
+      toast.error(message);
     } finally {
       setTogglingFeaturedId(null);
     }

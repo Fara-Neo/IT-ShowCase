@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { projectSchema } from "@/lib/validations";
 import { slugify } from "@/lib/utils";
+import { ZodError } from "zod";
+import { Prisma } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const validated = projectSchema.parse(body);
-    const slug = validated.slug ?? slugify(validated.title);
+    const slug = validated.slug?.trim() ? validated.slug.trim() : slugify(validated.title);
 
     const project = await prisma.project.create({
       data: {
@@ -76,7 +78,24 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(project, { status: 201 });
-  } catch {
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Ошибка валидации", details: error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "Проект с таким slug уже существует" },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

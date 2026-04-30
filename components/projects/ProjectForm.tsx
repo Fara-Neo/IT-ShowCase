@@ -74,7 +74,10 @@ export function ProjectForm({ initialData, categories, onSuccess }: ProjectFormP
         body: JSON.stringify(normalized),
       });
 
-      if (!res.ok) throw new Error("Ошибка сохранения");
+      if (!res.ok) {
+        const payload = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error || "Ошибка сохранения");
+      }
 
       toast.success(
         initialData?.id ? "Проект обновлён" : "Проект создан"
@@ -85,8 +88,10 @@ export function ProjectForm({ initialData, categories, onSuccess }: ProjectFormP
         router.push("/admin/projects");
         router.refresh();
       }
-    } catch {
-      toast.error("Произошла ошибка. Попробуйте снова.");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Произошла ошибка. Попробуйте снова.";
+      toast.error(message);
     }
   };
 
