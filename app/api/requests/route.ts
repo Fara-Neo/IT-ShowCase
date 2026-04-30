@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { RequestStatus } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { redis } from "@/lib/redis";
 import { requestSchema } from "@/lib/validations";
 import { sendRequestEmails } from "@/lib/mailer";
 
@@ -16,6 +17,8 @@ type IpWindow = {
 };
 
 const ipRateLimitStore = new Map<string, IpWindow>();
+type EmailWindow = IpWindow;
+const emailRateLimitStore = new Map<string, EmailWindow>();
 
 function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
@@ -28,7 +31,7 @@ function getClientIp(request: NextRequest): string {
   return realIp?.trim() || "unknown";
 }
 
-function checkAndConsumeIpRateLimit(clientIp: string): boolean {
+function checkAndConsumeIpRateLimitInMemory(clientIp: string): boolean {
   const now = Date.now();
   const current = ipRateLimitStore.get(clientIp);
 
@@ -47,6 +50,43 @@ function checkAndConsumeIpRateLimit(clientIp: string): boolean {
   current.count += 1;
   ipRateLimitStore.set(clientIp, current);
   return true;
+}
+
+function checkAndConsumeEmailRateLimitInMemory(email: string): boolean {
+  const now = Date.now();
+  const current = emailRateLimitStore.get(email);
+
+  if (!current || now >= current.resetAt) {
+    emailRateLimitStore.set(email, {
+      count: 1,
+      resetAt: now + REQUEST_WINDOW_MS,
+    });
+    return true;
+  }
+
+  if (current.count >= MAX_REQUESTS_PER_EMAIL_IN_WINDOW) {
+    return false;
+  }
+
+  current.count += 1;
+  emailRateLimitStore.set(email, current);
+  return true;
+}
+
+async function checkAndConsumeRateLimitRedis(
+  key: string,
+  limit: number,
+  windowSeconds: number
+): Promise<boolean> {
+  if (!redis) {
+    return true;
+  }
+
+  const count = await redis.incr(key);
+  if (count === 1) {
+    await redis.expire(key, windowSeconds);
+  }
+  return count <= limit;
 }
 
 const requestStatuses = [
@@ -116,9 +156,16 @@ export async function POST(request: NextRequest) {
 
     const validated = parsed.data;
     const normalizedEmail = validated.clientEmail.trim().toLowerCase();
+    const windowSeconds = Math.ceil(REQUEST_WINDOW_MS / 1000);
 
     const clientIp = getClientIp(request);
-    const isIpAllowed = checkAndConsumeIpRateLimit(clientIp);
+    const isIpAllowed = redis
+      ? await checkAndConsumeRateLimitRedis(
+          `ratelimit:requests:ip:${clientIp}`,
+          MAX_REQUESTS_PER_IP_IN_WINDOW,
+          windowSeconds
+        )
+      : checkAndConsumeIpRateLimitInMemory(clientIp);
     if (!isIpAllowed) {
       return NextResponse.json(
         { error: "Слишком много запросов. Попробуйте позже." },
@@ -126,20 +173,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const windowStart = new Date(Date.now() - REQUEST_WINDOW_MS);
-    const recentRequestsByEmail = await prisma.request.count({
-      where: {
-        clientEmail: {
-          equals: normalizedEmail,
-          mode: "insensitive",
-        },
-        createdAt: {
-          gte: windowStart,
-        },
-      },
-    });
+    const isEmailAllowed = redis
+      ? await checkAndConsumeRateLimitRedis(
+          `ratelimit:requests:email:${normalizedEmail}`,
+          MAX_REQUESTS_PER_EMAIL_IN_WINDOW,
+          windowSeconds
+        )
+      : checkAndConsumeEmailRateLimitInMemory(normalizedEmail);
 
-    if (recentRequestsByEmail >= MAX_REQUESTS_PER_EMAIL_IN_WINDOW) {
+    if (!isEmailAllowed) {
       return NextResponse.json(
         {
           error: "С этого email уже отправлено слишком много заявок. Попробуйте позже.",

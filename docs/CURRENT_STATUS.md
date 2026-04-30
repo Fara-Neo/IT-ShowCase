@@ -90,6 +90,8 @@
 | Диагностика авторизации на проде | 30 апреля 2026 | Выявлена критичная причина редиректов на `/login`: отсутствовал `NEXTAUTH_SECRET` в Vercel Production |
 | DNS-подготовка Mailtrap sending domain | 30 апреля 2026 | Подготовлены и добавляются DNS записи (CNAME/DKIM/DMARC) для верификации домена отправителя |
 | Финальная полировка текста на `/about` | 30 апреля 2026 | Первый подзаголовочный абзац возвращён к базовому виду; основной абзац про IT ShowCase оформлен как акцентный визуальный блок |
+| Redis rate limiting для заявок | 30 апреля 2026 | Добавлен Upstash Redis клиент, лимиты `POST /api/requests` перенесены в Redis с fallback на in-memory при отсутствии env |
+| Smoke-тест rate limit после миграции | 30 апреля 2026 | Локально подтверждён порог по email: 3 успешных запроса подряд, 4-й получает `429` |
 
 ---
 
@@ -116,6 +118,7 @@
 - [x] Cloudinary — signed upload реализован, ключи заполнены и загрузка протестирована end-to-end
 - [x] Nodemailer / Mailtrap — SMTP настроен, протестированы endpoint `POST /api/admin/mail-test` и отправка из формы заявки
 - [~] OAuth (Google) — провайдер подключается условно по env, в production настроены redirect URI; требуется финальная проверка входа после обновления env
+- [~] Redis/Upstash rate limiting — серверная логика переведена на Redis (с fallback), локальный smoke-тест пройден; требуется прод-проверка на Vercel
 - [ ] Production-хостинг — Vercel + кастомный домен: env перенесены, идёт проверка успешного деплоя и маршрутов на проде
 
 ---
@@ -141,7 +144,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 | # | Проблема | Приоритет | Статус / Комментарий |
 |---|---|---|---|
 | 1 | Загрузка файлов >4,5 МБ через Vercel Serverless Functions | High | **Решено:** реализована прямая signed upload загрузка в Cloudinary (без проксирования файла через serverless API) |
-| 2 | Отсутствие rate limiting на форме заявки — риск спама | High | **Решено:** добавлен лимит в `POST /api/requests` (IP + email, окно 1 час, ответ `429`) |
+| 2 | Отсутствие устойчивого rate limiting на форме заявки в multi-instance окружении | High | **В основном решено:** лимит в `POST /api/requests` переведён на Redis/Upstash (IP + email, окно 1 час, `429`) с fallback; требуется финальная проверка на production |
 | 3 | FOUC при смене темы в Safari | Low | Решено: `next-themes` с `attribute="class"` + `suppressHydrationWarning` |
 | 4 | Prisma Client в Edge Runtime | Low | Решено: `middleware.ts` использует только JWT-проверку через `next-auth/jwt` |
 | 5 | `@base-ui/react` компоненты несовместимы с `react-hook-form` | — | **Исправлено:** `Input`, `Textarea`, `Button` переписаны на нативные элементы |
@@ -168,7 +171,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 2. **Завершить деплой на Vercel** — Framework Preset: Next.js; Output Directory: по умолчанию; `NEXTAUTH_URL`/`NEXT_PUBLIC_APP_URL` = канонический URL домена; smoke-check публичных страниц и админки.
 3. **Завершить Mailtrap DNS verification** — дождаться propagation записей, подтвердить домен в Mailtrap, повторно проверить отправку из `POST /api/admin/mail-test`.
 4. **Расширить CI/CD** — добавить отдельные jobs для тестов и (опционально) авто-деплоя.
-5. **Production rate limiting** — вынести лимит из in-memory в Redis/Upstash для горизонтального масштабирования.
+5. **Проверка Redis rate limiting на production** — подтвердить срабатывание лимита на Vercel (включая IP/email кейсы) и отсутствие регрессий по отправке заявок.
 6. **Обновлять этот файл** после каждой значимой задачи.
 
 > **Правило:** Этот документ — живой. Устаревшая документация хуже её отсутствия.
