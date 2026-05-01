@@ -95,6 +95,7 @@
 | Фикс admin CRUD проектов (создание/редактирование/удаление/избранное) | 30 апреля 2026 | Нормализован `slug` в API, добавлены ответы `400/409` с понятными текстами, обновлены UI-ошибки в формах и таблице, удаление разрешено seller только для своих проектов |
 | Фикс `500` в `PATCH /api/projects/:id` | 1 мая 2026 | Нормализованы пустые строки в `categoryId/imageUrl/demoUrl` в `null`, добавлены обработчики Prisma `P2003/P2025`; аналогичная нормализация добавлена в `POST /api/projects` |
 | Усиление диагностики `PATCH /api/projects/:id` | 1 мая 2026 | Добавлено устойчивое извлечение `projectId`, fallback-мэппинг Prisma ошибок по `error.code` (без жесткой привязки к `instanceof`) и безопасное runtime-логирование для Vercel |
+| Фикс build/runtime-ошибки `projectPatchSchema` | 1 мая 2026 | Убрана несовместимость `.partial()` со схемой, содержащей refine: введён `projectPatchBaseSchema`, обновлён тип refinements и `projectPatchSchema` для стабильного PATCH-парсинга |
 
 ---
 
@@ -118,7 +119,7 @@
 - [x] **Управление пользователями** — список, смена роли
 - [x] Стабилизация CRUD в админке проектов — починены операции create/edit/save/delete/featured и улучшена диагностика ошибок на UI
 - [x] Пост-фикс API проектов — устранён `500` при сохранении проекта с пустыми необязательными полями и улучшена обработка Prisma-ошибок
-- [~] Runtime-диагностика PATCH ошибок в проде — включено детализированное логирование в `/api/projects/[id]`, продолжается проверка после деплоя
+- [x] Runtime-диагностика PATCH ошибок в проде — включено детализированное логирование в `/api/projects/[id]`, выявлена первопричина `.partial() cannot be used on object schemas containing refinements`
 
 ### Сервисы
 - [x] Cloudinary — signed upload реализован, ключи заполнены и загрузка протестирована end-to-end
@@ -161,7 +162,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 | 10 | Mailtrap domain status: Unverified | Medium | В процессе: на стороне DNS (reg.ru) добавляются записи CNAME/DKIM/DMARC для подтверждения sending domain |
 | 11 | Ошибки операций проекта в админке (create/edit/save/delete/featured) | High | **Решено:** исправлена обработка пустого/дублирующегося `slug`, добавлены осмысленные API-ответы и UI-диагностика ошибок, удаление ограничено владельцем для seller |
 | 12 | `500` на `PATCH /api/projects/:id` при сохранении проекта | High | **Решено:** пустые `categoryId/imageUrl/demoUrl` теперь нормализуются в `null`, добавлены ответы по Prisma `P2003/P2025` |
-| 13 | Периодический `500` на `PATCH /api/projects/:id` при payload `{ featured: false }` в production | High | В расследовании: на проде включена расширенная диагностика (`error.code` + runtime logs) для выявления точной причины и финального фикса |
+| 13 | Периодический `500` на `PATCH /api/projects/:id` при payload `{ featured: false }` в production | High | **Причина найдена:** `projectSchema.partial()` вызывался на refined-схеме и падал в runtime. **Решено:** выделена `projectPatchSchema` на базе `projectPatchBaseSchema` с совместимыми refinements |
 
 ---
 
@@ -178,7 +179,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 
 1. **Стабилизировать auth на проде** — добавить/проверить `NEXTAUTH_SECRET` в Vercel Production, выполнить Redeploy, проверить `/api/auth/session`, логин и доступ к `/admin`.
 2. **Завершить деплой на Vercel** — Framework Preset: Next.js; Output Directory: по умолчанию; `NEXTAUTH_URL`/`NEXT_PUBLIC_APP_URL` = канонический URL домена; smoke-check публичных страниц и админки.
-3. **Закрыть расследование PATCH `500`** — после деплоя собрать новый runtime log `/api/projects/[id]`, зафиксировать точный `error.code` и применить финальный точечный фикс.
+3. **Подтвердить фикc PATCH на production** — после деплоя повторить `featured` toggle и сохранение проекта; убедиться в отсутствии `500` на `/api/projects/[id]`.
 4. **Завершить Mailtrap DNS verification** — дождаться propagation записей, подтвердить домен в Mailtrap, повторно проверить отправку из `POST /api/admin/mail-test`.
 5. **Расширить CI/CD** — добавить отдельные jobs для тестов и (опционально) авто-деплоя.
 6. **Проверка Redis rate limiting на production** — подтвердить срабатывание лимита на Vercel (включая IP/email кейсы) и отсутствие регрессий по отправке заявок.

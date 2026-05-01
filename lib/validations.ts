@@ -13,10 +13,10 @@ const projectBaseSchema = z.object({
   featured: z.boolean().optional(),
 });
 
-function applyProjectRefinements(
-  data: z.infer<typeof projectBaseSchema>,
-  ctx: z.RefinementCtx
-) {
+const projectPatchBaseSchema = projectBaseSchema.partial();
+type ProjectRefinementInput = z.infer<typeof projectPatchBaseSchema>;
+
+function applyProjectRefinements(data: ProjectRefinementInput, ctx: z.RefinementCtx) {
     if (data.slug !== undefined && data.slug.trim() !== "") {
       const value = data.slug.trim();
       if (value.length < 3) {
@@ -59,7 +59,7 @@ function applyProjectRefinements(
 }
 
 export const projectSchema = projectBaseSchema.superRefine(applyProjectRefinements);
-export const projectPatchSchema = projectBaseSchema.partial().superRefine(applyProjectRefinements);
+export const projectPatchSchema = projectPatchBaseSchema.superRefine(applyProjectRefinements);
 
 export const requestSchema = z.object({
   projectId: z.string().min(1, "Укажите проект"),
