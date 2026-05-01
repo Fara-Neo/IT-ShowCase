@@ -6,6 +6,7 @@ import { projectSchema } from "@/lib/validations";
 import { slugify } from "@/lib/utils";
 import { ZodError } from "zod";
 import { Prisma } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 export async function GET(request: NextRequest) {
   try {
@@ -79,6 +80,10 @@ export async function POST(request: NextRequest) {
         authorId: session.user.id,
       },
     });
+
+    revalidatePath("/admin/projects");
+    revalidatePath("/projects");
+    revalidatePath("/");
 
     return NextResponse.json(project, { status: 201 });
   } catch (error) {

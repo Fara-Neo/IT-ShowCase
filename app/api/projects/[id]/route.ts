@@ -6,6 +6,7 @@ import { projectPatchSchema } from "@/lib/validations";
 import { slugify } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
+import { revalidatePath } from "next/cache";
 
 interface RouteParams {
   params: { id: string };
@@ -104,6 +105,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       data: updateData,
     });
 
+    revalidatePath("/admin/projects");
+    revalidatePath(`/admin/projects/${projectId}/edit`);
+    revalidatePath("/projects");
+    revalidatePath("/");
+
     return NextResponse.json(project);
   } catch (error) {
     if (error instanceof ZodError) {
@@ -171,6 +177,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     await prisma.project.delete({ where: { id: projectId } });
+
+    revalidatePath("/admin/projects");
+    revalidatePath("/projects");
+    revalidatePath("/");
+
     return new NextResponse(null, { status: 204 });
   } catch {
     return NextResponse.json(

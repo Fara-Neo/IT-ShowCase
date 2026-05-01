@@ -96,6 +96,7 @@
 | Фикс `500` в `PATCH /api/projects/:id` | 1 мая 2026 | Нормализованы пустые строки в `categoryId/imageUrl/demoUrl` в `null`, добавлены обработчики Prisma `P2003/P2025`; аналогичная нормализация добавлена в `POST /api/projects` |
 | Усиление диагностики `PATCH /api/projects/:id` | 1 мая 2026 | Добавлено устойчивое извлечение `projectId`, fallback-мэппинг Prisma ошибок по `error.code` (без жесткой привязки к `instanceof`) и безопасное runtime-логирование для Vercel |
 | Фикс build/runtime-ошибки `projectPatchSchema` | 1 мая 2026 | Убрана несовместимость `.partial()` со схемой, содержащей refine: введён `projectPatchBaseSchema`, обновлён тип refinements и `projectPatchSchema` для стабильного PATCH-парсинга |
+| Фикс stale UI после успешного изменения проекта | 1 мая 2026 | Добавлена cache invalidation через `revalidatePath` после `POST/PATCH/DELETE` проектов, чтобы данные в админке и публичных списках обновлялись сразу |
 
 ---
 
@@ -120,6 +121,7 @@
 - [x] Стабилизация CRUD в админке проектов — починены операции create/edit/save/delete/featured и улучшена диагностика ошибок на UI
 - [x] Пост-фикс API проектов — устранён `500` при сохранении проекта с пустыми необязательными полями и улучшена обработка Prisma-ошибок
 - [x] Runtime-диагностика PATCH ошибок в проде — включено детализированное логирование в `/api/projects/[id]`, выявлена первопричина `.partial() cannot be used on object schemas containing refinements`
+- [x] Согласованность UI после мутаций проектов — после create/edit/delete/featured страницы принудительно инвалидации кэша и показывают актуальные данные
 
 ### Сервисы
 - [x] Cloudinary — signed upload реализован, ключи заполнены и загрузка протестирована end-to-end
@@ -163,6 +165,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 | 11 | Ошибки операций проекта в админке (create/edit/save/delete/featured) | High | **Решено:** исправлена обработка пустого/дублирующегося `slug`, добавлены осмысленные API-ответы и UI-диагностика ошибок, удаление ограничено владельцем для seller |
 | 12 | `500` на `PATCH /api/projects/:id` при сохранении проекта | High | **Решено:** пустые `categoryId/imageUrl/demoUrl` теперь нормализуются в `null`, добавлены ответы по Prisma `P2003/P2025` |
 | 13 | Периодический `500` на `PATCH /api/projects/:id` при payload `{ featured: false }` в production | High | **Причина найдена:** `projectSchema.partial()` вызывался на refined-схеме и падал в runtime. **Решено:** выделена `projectPatchSchema` на базе `projectPatchBaseSchema` с совместимыми refinements |
+| 14 | Успешный PATCH/POST/DELETE не сразу отражается в UI | Medium | **Решено:** после мутаций API роуты вызывают `revalidatePath` для `/admin/projects`, `/admin/projects/[id]/edit`, `/projects`, `/` |
 
 ---
 
@@ -179,7 +182,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 
 1. **Стабилизировать auth на проде** — добавить/проверить `NEXTAUTH_SECRET` в Vercel Production, выполнить Redeploy, проверить `/api/auth/session`, логин и доступ к `/admin`.
 2. **Завершить деплой на Vercel** — Framework Preset: Next.js; Output Directory: по умолчанию; `NEXTAUTH_URL`/`NEXT_PUBLIC_APP_URL` = канонический URL домена; smoke-check публичных страниц и админки.
-3. **Подтвердить фикc PATCH на production** — после деплоя повторить `featured` toggle и сохранение проекта; убедиться в отсутствии `500` на `/api/projects/[id]`.
+3. **Подтвердить фиксы на production** — после деплоя проверить, что PATCH `featured` и сохранение проекта применяются без `500`, а UI сразу отражает изменения.
 4. **Завершить Mailtrap DNS verification** — дождаться propagation записей, подтвердить домен в Mailtrap, повторно проверить отправку из `POST /api/admin/mail-test`.
 5. **Расширить CI/CD** — добавить отдельные jobs для тестов и (опционально) авто-деплоя.
 6. **Проверка Redis rate limiting на production** — подтвердить срабатывание лимита на Vercel (включая IP/email кейсы) и отсутствие регрессий по отправке заявок.
