@@ -1,19 +1,22 @@
 import { z } from "zod";
 
-export const projectSchema = z
-  .object({
-    title: z.string().min(3, "Минимум 3 символа").max(100, "Максимум 100 символов"),
-    slug: z.string().optional(),
-    description: z.string().min(20, "Минимум 20 символов"),
-    price: z.number().min(0, "Цена не может быть отрицательной"),
-    imageUrl: z.string().optional(),
-    demoUrl: z.string().optional(),
-    techStack: z.array(z.string()).optional(),
-    categoryId: z.string().optional(),
-    published: z.boolean().optional(),
-    featured: z.boolean().optional(),
-  })
-  .superRefine((data, ctx) => {
+const projectBaseSchema = z.object({
+  title: z.string().min(3, "Минимум 3 символа").max(100, "Максимум 100 символов"),
+  slug: z.string().optional(),
+  description: z.string().min(20, "Минимум 20 символов"),
+  price: z.number().min(0, "Цена не может быть отрицательной"),
+  imageUrl: z.string().optional(),
+  demoUrl: z.string().optional(),
+  techStack: z.array(z.string()).optional(),
+  categoryId: z.string().optional(),
+  published: z.boolean().optional(),
+  featured: z.boolean().optional(),
+});
+
+function applyProjectRefinements(
+  data: z.infer<typeof projectBaseSchema>,
+  ctx: z.RefinementCtx
+) {
     if (data.slug !== undefined && data.slug.trim() !== "") {
       const value = data.slug.trim();
       if (value.length < 3) {
@@ -53,7 +56,10 @@ export const projectSchema = z
         });
       }
     }
-  });
+}
+
+export const projectSchema = projectBaseSchema.superRefine(applyProjectRefinements);
+export const projectPatchSchema = projectBaseSchema.partial().superRefine(applyProjectRefinements);
 
 export const requestSchema = z.object({
   projectId: z.string().min(1, "Укажите проект"),
@@ -80,6 +86,7 @@ export const loginSchema = z.object({
 
 export type ProjectInput = z.infer<typeof projectSchema>;
 export type ProjectFormValues = z.input<typeof projectSchema>;
+export type ProjectPatchInput = z.infer<typeof projectPatchSchema>;
 export type RequestInput = z.infer<typeof requestSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

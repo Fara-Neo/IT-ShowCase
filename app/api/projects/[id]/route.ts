@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { projectSchema } from "@/lib/validations";
+import { projectPatchSchema } from "@/lib/validations";
 import { slugify } from "@/lib/utils";
 import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
@@ -70,7 +70,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const validated = projectSchema.partial().parse(body);
+    const validated = projectPatchSchema.parse(body);
     const updateData: Record<string, unknown> = { ...validated };
 
     if (typeof validated.slug === "string") {
