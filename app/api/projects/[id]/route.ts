@@ -11,10 +11,33 @@ interface RouteParams {
   params: { id: string };
 }
 
-export async function GET(_: NextRequest, { params }: RouteParams) {
+type PrismaLikeError = {
+  code?: string;
+  message?: string;
+};
+
+function getProjectId(request: NextRequest, params: RouteParams["params"]): string | null {
+  if (params?.id) return params.id;
+  const fromPath = request.nextUrl.pathname.split("/").filter(Boolean).pop();
+  return fromPath || null;
+}
+
+function getErrorCode(error: unknown): string | undefined {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return error.code;
+  }
+  return (error as PrismaLikeError)?.code;
+}
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const projectId = getProjectId(request, params);
+    if (!projectId) {
+      return NextResponse.json({ error: "Некорректный ID проекта" }, { status: 400 });
+    }
+
     const project = await prisma.project.findUnique({
-      where: { id: params.id },
+      where: { id: projectId },
       include: {
         category: true,
         author: { select: { id: true, name: true, image: true } },
@@ -39,6 +62,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const session = await getServerSession(authOptions);
     if (!session?.user || !["seller", "admin"].includes(session.user.role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const projectId = getProjectId(request, params);
+    if (!projectId) {
+      return NextResponse.json({ error: "Некорректный ID проекта" }, { status: 400 });
     }
 
     const body = await request.json();
@@ -72,7 +100,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const project = await prisma.project.update({
-      where: { id: params.id },
+      where: { id: projectId },
       data: updateData,
     });
 
@@ -85,32 +113,30 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
+    const errorCode = getErrorCode(error);
+
+    if (errorCode === "P2002") {
       return NextResponse.json(
         { error: "Проект с таким slug уже существует" },
         { status: 409 }
       );
     }
 
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2003"
-    ) {
+    if (errorCode === "P2003") {
       return NextResponse.json(
         { error: "Выбрана некорректная категория проекта" },
         { status: 400 }
       );
     }
 
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
+    if (errorCode === "P2025") {
       return NextResponse.json({ error: "Проект не найден" }, { status: 404 });
     }
+
+    console.error("PATCH /api/projects/[id] failed", {
+      errorCode,
+      message: (error as PrismaLikeError)?.message ?? "unknown",
+    });
 
     return NextResponse.json(
       { error: "Internal server error" },
@@ -119,15 +145,20 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(_: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user || !["seller", "admin"].includes(session.user.role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const projectId = getProjectId(request, params);
+    if (!projectId) {
+      return NextResponse.json({ error: "Некорректный ID проекта" }, { status: 400 });
+    }
+
     const project = await prisma.project.findUnique({
-      where: { id: params.id },
+      where: { id: projectId },
       select: { authorId: true },
     });
 
@@ -139,7 +170,7 @@ export async function DELETE(_: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await prisma.project.delete({ where: { id: params.id } });
+    await prisma.project.delete({ where: { id: projectId } });
     return new NextResponse(null, { status: 204 });
   } catch {
     return NextResponse.json(
