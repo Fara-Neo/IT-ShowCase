@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   title: "Редактировать проект | Админ",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminEditProjectPage({ params }: EditProjectPageProps) {
   const [project, categories] = await Promise.all([
     prisma.project.findUnique({

@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   title: "Проекты | Админ",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminProjectsPage() {
   const projects = await prisma.project.findMany({
     include: {

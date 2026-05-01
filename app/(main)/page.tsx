@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { Mail, MessageCircle, ExternalLink } from "lucide-react";
 import { TiltCard } from "@/components/home/TiltCard";
 
+export const dynamic = "force-dynamic";
+
 const stats = [
   { label: "проектов", value: "12+" },
   { label: "довольных клиентов", value: "98%" },
@@ -101,7 +103,7 @@ export default async function HomePage() {
         {featuredProjects.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {featuredProjects.map((project, idx) => (
-              <TiltCard key={project.title}>
+              <TiltCard key={project.id}>
                 <Card className={`h-full ${idx ? `delay-${(idx + 1) * 100}` : ""}`}>
                   <CardHeader>
                     <CardTitle>{project.title}</CardTitle>

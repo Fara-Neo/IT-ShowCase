@@ -97,6 +97,7 @@
 | Усиление диагностики `PATCH /api/projects/:id` | 1 мая 2026 | Добавлено устойчивое извлечение `projectId`, fallback-мэппинг Prisma ошибок по `error.code` (без жесткой привязки к `instanceof`) и безопасное runtime-логирование для Vercel |
 | Фикс build/runtime-ошибки `projectPatchSchema` | 1 мая 2026 | Убрана несовместимость `.partial()` со схемой, содержащей refine: введён `projectPatchBaseSchema`, обновлён тип refinements и `projectPatchSchema` для стабильного PATCH-парсинга |
 | Фикс stale UI после успешного изменения проекта | 1 мая 2026 | Добавлена cache invalidation через `revalidatePath` после `POST/PATCH/DELETE` проектов, чтобы данные в админке и публичных списках обновлялись сразу |
+| Динамический рендер для актуализации избранных и админки | 1 мая 2026 | Страницы главной и админ-проектов переведены в `force-dynamic`; исправлен `key` карточек избранного (`project.id`) для корректного визуального перемешивания и обновления |
 
 ---
 
@@ -122,6 +123,7 @@
 - [x] Пост-фикс API проектов — устранён `500` при сохранении проекта с пустыми необязательными полями и улучшена обработка Prisma-ошибок
 - [x] Runtime-диагностика PATCH ошибок в проде — включено детализированное логирование в `/api/projects/[id]`, выявлена первопричина `.partial() cannot be used on object schemas containing refinements`
 - [x] Согласованность UI после мутаций проектов — после create/edit/delete/featured страницы принудительно инвалидации кэша и показывают актуальные данные
+- [x] Актуальные данные без ручного F5 — главная и страницы админ-проектов работают как dynamic routes и сразу показывают изменения после сохранения
 
 ### Сервисы
 - [x] Cloudinary — signed upload реализован, ключи заполнены и загрузка протестирована end-to-end
@@ -166,6 +168,7 @@ Escrow-механизм. Полнотекстовый поиск. Публичн
 | 12 | `500` на `PATCH /api/projects/:id` при сохранении проекта | High | **Решено:** пустые `categoryId/imageUrl/demoUrl` теперь нормализуются в `null`, добавлены ответы по Prisma `P2003/P2025` |
 | 13 | Периодический `500` на `PATCH /api/projects/:id` при payload `{ featured: false }` в production | High | **Причина найдена:** `projectSchema.partial()` вызывался на refined-схеме и падал в runtime. **Решено:** выделена `projectPatchSchema` на базе `projectPatchBaseSchema` с совместимыми refinements |
 | 14 | Успешный PATCH/POST/DELETE не сразу отражается в UI | Medium | **Решено:** после мутаций API роуты вызывают `revalidatePath` для `/admin/projects`, `/admin/projects/[id]/edit`, `/projects`, `/` |
+| 15 | Избранные на главной не отображались в перемешанном порядке стабильно | Low | **Решено:** главная страница переведена в dynamic mode; ключи карточек изменены на `project.id`, чтобы React корректно применял перестановку |
 
 ---
 
