@@ -56,6 +56,21 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    if (typeof validated.categoryId === "string") {
+      const trimmedCategoryId = validated.categoryId.trim();
+      updateData.categoryId = trimmedCategoryId ? trimmedCategoryId : null;
+    }
+
+    if (typeof validated.imageUrl === "string") {
+      const trimmedImageUrl = validated.imageUrl.trim();
+      updateData.imageUrl = trimmedImageUrl ? trimmedImageUrl : null;
+    }
+
+    if (typeof validated.demoUrl === "string") {
+      const trimmedDemoUrl = validated.demoUrl.trim();
+      updateData.demoUrl = trimmedDemoUrl ? trimmedDemoUrl : null;
+    }
+
     const project = await prisma.project.update({
       where: { id: params.id },
       data: updateData,
@@ -78,6 +93,23 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         { error: "Проект с таким slug уже существует" },
         { status: 409 }
       );
+    }
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      return NextResponse.json(
+        { error: "Выбрана некорректная категория проекта" },
+        { status: 400 }
+      );
+    }
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return NextResponse.json({ error: "Проект не найден" }, { status: 404 });
     }
 
     return NextResponse.json(

@@ -60,6 +60,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = projectSchema.parse(body);
     const slug = validated.slug?.trim() ? validated.slug.trim() : slugify(validated.title);
+    const categoryId = validated.categoryId?.trim() ? validated.categoryId.trim() : null;
+    const imageUrl = validated.imageUrl?.trim() ? validated.imageUrl.trim() : null;
+    const demoUrl = validated.demoUrl?.trim() ? validated.demoUrl.trim() : null;
 
     const project = await prisma.project.create({
       data: {
@@ -67,10 +70,10 @@ export async function POST(request: NextRequest) {
         slug,
         description: validated.description,
         price: validated.price,
-        imageUrl: validated.imageUrl,
-        demoUrl: validated.demoUrl,
+        imageUrl,
+        demoUrl,
         techStack: validated.techStack ?? [],
-        categoryId: validated.categoryId,
+        categoryId,
         published: validated.published ?? false,
         featured: validated.featured ?? false,
         authorId: session.user.id,
@@ -93,6 +96,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Проект с таким slug уже существует" },
         { status: 409 }
+      );
+    }
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      return NextResponse.json(
+        { error: "Выбрана некорректная категория проекта" },
+        { status: 400 }
       );
     }
 
